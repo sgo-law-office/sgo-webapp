@@ -1,6 +1,5 @@
 /*eslint-disable*/
 import React from "react";
-import PropTypes from "prop-types";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 import ListItem from "@material-ui/core/ListItem";
@@ -43,13 +42,12 @@ export default function Footer(props) {
           <span>
             &copy; {1900 + new Date().getYear()}{" "}
             <a
-              href="https://www.creative-tim.com?ref=mdr-footer"
+              href="https://www.facebook.com/sgoadvogados"
               target="_blank"
               className={classes.a}
             >
-              Creative Tim
+              SGO Advogados
             </a>
-            , made with love for a better web
           </span>
         </p>
       </div>

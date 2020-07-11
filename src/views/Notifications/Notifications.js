@@ -128,7 +128,7 @@ export default function Notifications() {
           Handcrafted by our friends from{" "}
           <a
             target="_blank"
-            href="https://material-ui-next.com/?ref=creativetime"
+            href="https://material-ui.com"
           >
             Material UI
           </a>{" "}

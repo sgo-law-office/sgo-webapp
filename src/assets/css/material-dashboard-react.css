@@ -1,18 +1,3 @@
-/*!
-
- =========================================================
- * Material Dashboard React - v1.9.0 based on Material Dashboard - v1.2.0
- =========================================================
-
- * Product Page: http://www.creative-tim.com/product/material-dashboard-react
- * Copyright 2020 Creative Tim (http://www.creative-tim.com)
- * Licensed under MIT (https://github.com/creativetimofficial/material-dashboard-react/blob/master/LICENSE.md)
-
- =========================================================
-
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
- */
 .ct-grid {
   stroke: rgba(255, 255, 255, 0.2);
   stroke-width: 1px;
@@ -496,15 +481,6 @@ footer ul li a:hover {
   -ms-transform: translateY(-13%);
   transform: translateY(-13%);
   transform-origin: 0 0;
-}
-.fixed-plugin.rtl-fixed-plugin {
-  right: auto;
-  left: 0px;
-  border-radius: 0 8px 8px 0;
-}
-.fixed-plugin.rtl-fixed-plugin .dropdown-menu {
-  right: auto;
-  left: 80px;
 }
 * {
   letter-spacing: normal !important;
