@@ -1,4 +1,6 @@
 import React from "react";
+import { connect } from 'react-redux'
+
 import classNames from "classnames";
 import PropTypes from "prop-types";
 // @material-ui/core components
@@ -17,13 +19,13 @@ import styles from "assets/jss/material-dashboard-react/components/headerStyle.j
 
 const useStyles = makeStyles(styles);
 
-export default function Header(props) {
+function Header(props) {
   const classes = useStyles();
   function makeBrand() {
     var name;
     props.routes.map(prop => {
       if (window.location.href.indexOf(prop.layout + prop.path) !== -1) {
-        name = prop.name;
+        name = prop.label || prop.name;
       }
       return null;
     });
@@ -38,12 +40,12 @@ export default function Header(props) {
       <Toolbar className={classes.container}>
         <div className={classes.flex}>
           {/* Here we create navbar brand, based on route name */}
-          <Button color="transparent" href="#" className={classes.title}>
+          <Button disabled color="transparent" href="#" className={classes.title} style={{color: "black"}}>
             {makeBrand()}
           </Button>
         </div>
         <Hidden smDown implementation="css">
-          <AdminNavbarLinks />
+          <AdminNavbarLinks account={props.account} logout={props.logout} />
         </Hidden>
         <Hidden mdUp implementation="css">
           <IconButton
@@ -62,5 +64,14 @@ export default function Header(props) {
 Header.propTypes = {
   color: PropTypes.oneOf(["primary", "info", "success", "warning", "danger"]),
   handleDrawerToggle: PropTypes.func,
+  logout: PropTypes.func,
   routes: PropTypes.arrayOf(PropTypes.object)
 };
+
+const mapStateToProps = state => {
+  return {
+    account: state.account
+  };
+}
+
+export default connect(mapStateToProps)(Header);

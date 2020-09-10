@@ -12,8 +12,12 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardAvatar from "components/Card/CardAvatar.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
-
+import PersonIcon from '@material-ui/icons/Person';
+import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import avatar from "assets/img/faces/marc.jpg";
+import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
+import { connect } from "react-redux";
+
 
 const styles = {
   cardCategoryWhite: {
@@ -36,12 +40,12 @@ const styles = {
 
 const useStyles = makeStyles(styles);
 
-export default function UserProfile() {
+function UserProfile(props) {
   const classes = useStyles();
   return (
     <div>
       <GridContainer>
-        <GridItem xs={12} sm={12} md={8}>
+        {/* <GridItem xs={12} sm={12} md={8}>
           <Card>
             <CardHeader color="primary">
               <h4 className={classes.cardTitleWhite}>Edit Profile</h4>
@@ -150,25 +154,71 @@ export default function UserProfile() {
               <Button color="primary">Update Profile</Button>
             </CardFooter>
           </Card>
-        </GridItem>
-        <GridItem xs={12} sm={12} md={4}>
+        </GridItem> */}
+        <GridItem md={12} lg={3}></GridItem>
+        <GridItem xs={12} sm={12} md={12} lg={6}>
           <Card profile>
-            <CardAvatar profile>
-              <a href="#pablo" onClick={e => e.preventDefault()}>
-                <img src={avatar} alt="..." />
-              </a>
+            <CardAvatar profile style={{backgroundColor: "white"}}>
+              <PersonIcon style={{
+                  width: "130px",
+                  height: "130px",
+                  opacity: "0.8",
+                  padding: "22px 0 0 0",
+                  backgroundColor: "#eeeeee"
+                }}/>
             </CardAvatar>
             <CardBody profile>
-              <h6 className={classes.cardCategory}>CEO / CO-FOUNDER</h6>
-              <h4 className={classes.cardTitle}>Alec Thompson</h4>
-              <p className={classes.description}>
-                Don{"'"}t be scared of the truth because we need to restart the
-                human foundation in truth And I love you like Kanye loves Kanye
-                I love Rick Owens’ bed design but the back is...
-              </p>
-              <Button color="primary" round>
+              <h4 className={classes.cardTitle}>{props.account.name}</h4>
+              <h6 className={classes.cardCategory}>{props.account.mail}</h6>
+              <div className={classes.description}>
+                
+                <GridContainer>
+                  
+                  <GridItem sm={6} style={{textAlign: "right"}}>
+                    <p>Unidade</p>
+                  </GridItem>
+
+                  <GridItem sm={6} style={{textAlign: "left", fontWeight: "bold"}}>
+                    <p>{props.account.companyName}</p>
+                  </GridItem>
+
+                  <GridItem sm={6} style={{textAlign: "right"}}>
+                    <p>Departamento</p>
+                  </GridItem>
+
+                  <GridItem sm={6} style={{textAlign: "left", fontWeight: "bold"}}>
+                    <p>{props.account.department}</p>
+                  </GridItem>
+
+                  {/* <GridItem sm={6}>
+                    <CustomInput
+                      labelText="Unidade"
+                      id="company"
+                      inputProps={{
+                        value: "teste",
+                        readonly: true
+                      }}
+                      formControlProps={{
+                        fullWidth: true
+                      }}
+                    />
+                  </GridItem>
+                  
+                  <GridItem sm={6}>
+                    <CustomInput
+                      labelText="Departamento"
+                      id="department"
+                      formControlProps={{
+                        fullWidth: true
+                      }}
+                    />
+                  </GridItem> */}
+
+                </GridContainer>
+              </div>
+              {/* <Button color="primary" round>
                 Follow
-              </Button>
+              </Button> */}
             </CardBody>
           </Card>
         </GridItem>
@@ -176,3 +226,13 @@ export default function UserProfile() {
     </div>
   );
 }
+
+
+const mapStateToProps = state => {
+  return {
+      account: state.account
+  };
+}
+
+
+export default connect(mapStateToProps)(UserProfile);

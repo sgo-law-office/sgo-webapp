@@ -11,6 +11,7 @@ import Clear from "@material-ui/icons/Clear";
 import Check from "@material-ui/icons/Check";
 // core components
 import styles from "assets/jss/material-dashboard-react/components/customInputStyle.js";
+import { NativeSelect } from "@material-ui/core";
 
 const useStyles = makeStyles(styles);
 
@@ -23,7 +24,9 @@ export default function CustomInput(props) {
     labelProps,
     inputProps,
     error,
-    success
+    success,
+    select,
+    children
   } = props;
 
   const labelClasses = classNames({
@@ -52,15 +55,30 @@ export default function CustomInput(props) {
           {labelText}
         </InputLabel>
       ) : null}
-      <Input
-        classes={{
-          root: marginTop,
-          disabled: classes.disabled,
-          underline: underlineClasses
-        }}
-        id={id}
-        {...inputProps}
-      />
+      {select &&
+        <NativeSelect
+          classes={{
+            root: marginTop,
+            disabled: classes.disabled,
+            underline: underlineClasses
+          }}
+          id={id}
+          {...inputProps}
+        >
+          {children}
+        </NativeSelect>}
+      {!select && !children &&
+        <Input
+          classes={{
+            root: marginTop,
+            disabled: classes.disabled,
+            underline: underlineClasses
+          }}
+          id={id}
+          {...inputProps}
+        />}
+
+      {!select && children && <div>{children}</div>}
       {error ? (
         <Clear className={classes.feedback + " " + classes.labelRootError} />
       ) : success ? (
@@ -79,3 +97,8 @@ CustomInput.propTypes = {
   error: PropTypes.bool,
   success: PropTypes.bool
 };
+
+CustomInput.defaultProps = {
+  formControlProps: {
+  }
+}
