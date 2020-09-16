@@ -14,9 +14,9 @@ export default function Footer(props) {
   return (
     <footer className={classes.footer}>
       <div className={classes.container}>
-        {/* <div className={classes.left}>
+        <div className={classes.right}>
           <List className={classes.list}>
-            <ListItem className={classes.inlineBlock}>
+            {/* <ListItem className={classes.inlineBlock}>
               <a href="#home" className={classes.block}>
                 Home
               </a>
@@ -30,26 +30,18 @@ export default function Footer(props) {
               <a href="#portfolio" className={classes.block}>
                 Portfolio
               </a>
-            </ListItem>
+            </ListItem> */}
             <ListItem className={classes.inlineBlock}>
-              <a href="#blog" className={classes.block}>
-                Blog
+              <a href="#ajuda" className={classes.block}>
+                Ajuda
               </a>
             </ListItem>
+            {/* <ListItem className={classes.inlineBlock}>
+              <span>&copy; {1900 + new Date().getYear()}{" "} SGO Advogados </span>
+            </ListItem> */}
           </List>
         </div>
-        <p className={classes.right}>
-          <span>
-            &copy; {1900 + new Date().getYear()}{" "}
-            <a
-              href="https://www.facebook.com/sgoadvogados"
-              target="_blank"
-              className={classes.a}
-            >
-              SGO Advogados
-            </a>
-          </span>
-        </p> */}
+
       </div>
     </footer>
   );

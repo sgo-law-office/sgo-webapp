@@ -132,11 +132,11 @@ function Admin({ ...rest }) {
                           logout={logout}
                           {...rest}
                         />
-                        <div className={classes.content}>
+                        <div className={classes.content} style={{ minHeight: "calc(100vh - 224px)"}}>
                           <div className={classes.container}>{switchRoutes}</div>
                         </div>
 
-                        {/* <Footer /> */}
+                        <Footer />
                       </div>
                     </div>
                   );

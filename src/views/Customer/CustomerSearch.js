@@ -14,7 +14,7 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 import CustomInput from "components/CustomInput/CustomInput.js";
 import Button from "components/CustomButtons/Button.js";
-import { NativeSelect, InputLabel, Table, TableHead, TableRow, TableCell, TableBody } from "@material-ui/core";
+import { NativeSelect, InputLabel, Table, TableHead, TableRow, TableCell, TableBody, IconButton } from "@material-ui/core";
 import { connect } from "react-redux";
 import { fetchCompanies } from "store/actions";
 import CardFooter from "components/Card/CardFooter";
@@ -29,6 +29,9 @@ import Tooltip from '@material-ui/core/Tooltip';
 import ListIcon from '@material-ui/icons/List';
 import PersonOutlineIcon from '@material-ui/icons/PersonOutline';
 import AttachMoneyIcon from '@material-ui/icons/AttachMoney';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
+
 
 
 import Axios from "axios";
@@ -117,6 +120,8 @@ class CustomerSearch extends React.Component {
         limit: 20,
         offset: 0,
         total: 0,
+        sortBy: "created_by",
+        sortDirection: "desc",
         customers: []
       }
     }
@@ -131,19 +136,24 @@ class CustomerSearch extends React.Component {
         companyId: this.props.account ? this.props.account.companyId : null
       }
     });
-    this.search(0);
+
+    if (this.props.account && this.props.account.companyId) {
+      this.search(undefined, undefined, undefined, undefined, this.props.account.companyId);
+    }
   }
 
-  search(offset = 0, limit = 1) {
-    if (!this.props.account.companyId) {
+  search(offset = 0, limit = 10, sortBy = "created_at", sortDirection = "desc", companyId, active) {
+    if (!this.props.account.companyId && !companyId) {
       return;
     }
 
     const params = {
       offset: offset,
       limit: limit,
-      companyId: this.props.account.companyId,
-      active: this.state.params.active
+      sortBy: sortBy,
+      sortDirection: sortDirection,
+      companyId: companyId || this.state.params.companyId,
+      active: active == "all" ? undefined : (active || (this.state.params.active == "all" ? undefined : this.state.params.active))
     };
 
     if (this.state.params.name && this.state.params.name.trim().length > 0) {
@@ -157,7 +167,7 @@ class CustomerSearch extends React.Component {
     if (this.state.params.mail && this.state.params.mail.trim().length > 0) {
       params.mail = this.state.params.mail;
     }
-    
+
     if (this.state.params.city && this.state.params.city.trim().length > 0) {
       params.city = this.state.params.city;
     }
@@ -183,6 +193,8 @@ class CustomerSearch extends React.Component {
             ...this.state.data,
             limit: res.data.limit,
             offset: res.data.offset,
+            sortBy: res.data.sortBy,
+            sortDirection: res.data.sortDirection,
             total: res.data.total,
             customers: res.data.data || []
           }
@@ -214,79 +226,84 @@ class CustomerSearch extends React.Component {
       <div>
         <GridContainer>
 
-          <GridItem sm={12} md={5} lg={5}>
-            <CustomInput
-              formControlProps={{
-                fullWidth: true,
-                className: classes.margin + " " + classes.search
-              }}
-              inputProps={{
-                placeholder: "Nome",
-                onChange: e => this.setState({ params: { ...this.state.params, name: e.target.value } }),
-                value: this.state.params.name
-              }}
-            />
-          </GridItem>
+          <GridItem sm={12} md={11}>
+            <GridContainer>
 
-          <GridItem sm={12} md={2} lg={2}>
-            <CustomInput
-              formControlProps={{
-                fullWidth: true,
-                className: classes.margin + " " + classes.search
-              }}
-              inputProps={{
-                placeholder: "Código",
-                "width": "100%",
-                onChange: e => this.setState({ params: { ...this.state.params, code: e.target.value } }),
-                value: this.state.params.code
-              }}
-            />
-          </GridItem>
+              <GridItem sm={12} md={4} lg={6}>
+                <CustomInput
+                  formControlProps={{
+                    fullWidth: true,
+                    className: classes.margin + " " + classes.search
+                  }}
+                  inputProps={{
+                    placeholder: "Nome",
+                    onKeyPress: e => { if (e.key === 'Enter') { this.search(); } },
+                    onChange: e => this.setState({ params: { ...this.state.params, name: e.target.value } }),
+                    value: this.state.params.name
+                  }}
+                />
+              </GridItem>
 
-          <GridItem sm={12} md={4} lg={4}>
-            <CompanySelect id="companyId" labelText="Unidade"
-              formControlProps={{
-                fullWidth: true,
-                className: classes.margin + " " + classes.search
-              }}
-              onChange={e => this.setState({ params: { ...this.state.params, companyId: e.target.value } })}
-              value={this.state.params.companyId} />
-          </GridItem>
-
-          <GridItem sm={12} md={1} style={{ textAlign: "center" }}>
-            <Button color="white" color="primary" justIcon round onClick={e=> this.search(0)}>
-              <Search />
-            </Button>
-          </GridItem>
-
-        </GridContainer>
-
-        <a href="#" onClick={(e) => {
-          this.setState({ displayMoreFilters: !this.state.displayMoreFilters });
-          e.preventDefault();
-        }}>
-          <small>Exibir {this.state.displayMoreFilters && "menos"} {!this.state.displayMoreFilters && "mais"} filtros</small></a>
-
-        {this.state.displayMoreFilters &&
-          <GridContainer>
-            <GridItem sm={12} md={6} lg={3}>
-              <CustomInput
-                formControlProps={{
-                  fullWidth: true,
-                  className: classes.margin + " " + classes.search
-                }}
-                inputProps={{
-                  placeholder: "E-mail",
-                  inputProps: {
+              <GridItem sm={12} md={2} lg={2}>
+                <CustomInput
+                  formControlProps={{
+                    fullWidth: true,
+                    className: classes.margin + " " + classes.search
+                  }}
+                  inputProps={{
+                    placeholder: "Código",
                     "width": "100%",
-                    onChange: e => this.setState({ params: { ...this.state.params, mail: e.target.value } }),
-                    value: this.state.params.mail
-                  }
-                }}
-              />
-            </GridItem>
+                    onKeyPress: e => { if (e.key === 'Enter') { this.search(); } },
+                    onChange: e => this.setState({ params: { ...this.state.params, code: e.target.value } }),
+                    value: this.state.params.code
+                  }}
+                />
+              </GridItem>
 
-            <GridItem sm={12} md={6} lg={3}>
+              <GridItem sm={12} md={6} lg={4}>
+                <CompanySelect id="companyId" labelText="Unidade"
+                  formControlProps={{
+                    fullWidth: true,
+                    className: classes.margin + " " + classes.search
+                  }}
+                  inputProps={{
+                    onChange: e => {
+                      this.setState({ params: { ...this.state.params, companyId: e.target.value } });
+                      this.search(undefined, undefined, undefined, undefined, e.target.value);
+                    },
+                    value: this.state.params.companyId
+                  }} />
+              </GridItem>
+            </GridContainer>
+
+
+            <a href="#" onClick={(e) => {
+              this.setState({ displayMoreFilters: !this.state.displayMoreFilters });
+              e.preventDefault();
+            }}>
+              <small>Exibir {this.state.displayMoreFilters && "menos"} {!this.state.displayMoreFilters && "mais"} filtros</small></a>
+
+            {this.state.displayMoreFilters &&
+              <GridContainer>
+                <GridItem sm={12} md={6} lg={3}>
+                  <CustomInput
+                    formControlProps={{
+                      fullWidth: true,
+                      className: classes.margin + " " + classes.search
+                    }}
+                    inputProps={{
+                      placeholder: "E-mail",
+                      inputProps: {
+                        "width": "100%",
+                        onKeyPress: e => { if (e.key === 'Enter') { this.search(); } },
+                        onChange: e => this.setState({ params: { ...this.state.params, mail: e.target.value } }),
+                        value: this.state.params.mail
+                      }
+                    }}
+                  />
+                </GridItem>
+
+                {/* <GridItem sm={12} md={6} lg={3}>
               <CustomInput
                 formControlProps={{
                   fullWidth: true,
@@ -301,59 +318,76 @@ class CustomerSearch extends React.Component {
                   }
                 }}
               />
-            </GridItem>
+            </GridItem> */}
 
-            <GridItem sm={12} md={6} lg={2}>
-              <CustomInput
-                formControlProps={{
-                  fullWidth: true,
-                  className: classes.margin + " " + classes.search
-                }}
-                inputProps={{
-                  placeholder: "CPF",
-                  inputProps: {
-                    "width": "100%",
-                    onChange: e => this.setState({ params: { ...this.state.params, taxPayerIdentifier: e.target.value } }),
-                    value: this.state.params.taxPayerIdentifier
-                  }
-                }}
-              />
-            </GridItem>
+                <GridItem sm={12} md={6} lg={3}>
+                  <CustomInput
+                    formControlProps={{
+                      fullWidth: true,
+                      className: classes.margin + " " + classes.search
+                    }}
+                    inputProps={{
+                      placeholder: "CPF",
+                      inputProps: {
+                        "width": "100%",
+                        onKeyPress: e => { if (e.key === 'Enter') { this.search(); } },
+                        onChange: e => this.setState({ params: { ...this.state.params, taxPayerIdentifier: e.target.value } }),
+                        value: this.state.params.taxPayerIdentifier
+                      }
+                    }}
+                  />
+                </GridItem>
 
-            <GridItem sm={12} md={6} lg={2}>
-              <CustomInput
-                formControlProps={{
-                  fullWidth: true,
-                  className: classes.margin + " " + classes.search
-                }}
-                inputProps={{
-                  placeholder: "RG",
-                  inputProps: {
-                    "width": "100%",
-                    onChange: e => this.setState({ params: { ...this.state.params, idCard: e.target.value } }),
-                    value: this.state.params.idCard
-                  }
-                }}
-              />
-            </GridItem>
+                <GridItem sm={12} md={6} lg={3}>
+                  <CustomInput
+                    formControlProps={{
+                      fullWidth: true,
+                      className: classes.margin + " " + classes.search
+                    }}
+                    inputProps={{
+                      placeholder: "RG",
+                      inputProps: {
+                        "width": "100%",
+                        onKeyPress: e => { if (e.key === 'Enter') { this.search(); } },
+                        onChange: e => this.setState({ params: { ...this.state.params, idCard: e.target.value } }),
+                        value: this.state.params.idCard
+                      }
+                    }}
+                  />
+                </GridItem>
 
-            <GridItem sm={12} md={3} lg={2}>
-              <CustomInput select={true} labelText="Status"
-                inputProps={{
-                  onChange: e => this.setState({ params: { ...this.state.params, active: e.target.value } }),
-                  value: this.state.params.active
-                }}
-                formControlProps={{
-                  fullWidth: true,
-                  className: classes.margin + " " + classes.search
-                }}>
-                <option value={"true"}>Ativo</option>
-                <option value={"false"}>Desativado</option>
-              </CustomInput>
-            </GridItem>
+                <GridItem sm={12} md={6} lg={3}>
+                  <CustomInput select={true} labelText="Status"
+                    inputProps={{
+                      onChange: e => {
+                        this.setState({ params: { ...this.state.params, active: e.target.value } });
+                        this.search(undefined, undefined, undefined, undefined, undefined, e.target.value);
+                      },
+                      value: this.state.params.active
+                    }}
+                    formControlProps={{
+                      fullWidth: true,
+                      className: classes.margin + " " + classes.search
+                    }}>
+                    <option value={"all"}>Todos</option>
+                    <option value={"true"}>Ativo</option>
+                    <option value={"false"}>Desativado</option>                    
+                  </CustomInput>
+                </GridItem>
 
-          </GridContainer>}
+              </GridContainer>}
 
+
+          </GridItem>
+
+
+          <GridItem sm={12} md={1} style={{ textAlign: "center" }}>
+            <IconButton size="large" onClick={e => this.search()}>
+              <Search />
+            </IconButton>
+          </GridItem>
+
+        </GridContainer>
 
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
@@ -362,12 +396,57 @@ class CustomerSearch extends React.Component {
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell>Nome</TableCell>
-                      <TableCell>Código</TableCell>
-                      {/* <TableCell>Cidade</TableCell> */}
-                      <TableCell>Status</TableCell>
-                      <TableCell>Criado em</TableCell>
-                      <TableCell>Ações</TableCell>
+                      <TableCell style={{ textAlign: "center" }}>
+                        Código
+                        <div style={{ display: "inline", verticalAlign: "top", padding: "0 5px" }}>
+                          <a href="#">
+                            {(this.state.data.sortBy != "code" || this.state.data.sortDirection == "desc") &&
+                              <ArrowDropDownIcon
+                                color={this.state.data.sortBy == "code" ? "" : "disabled"}
+                                onClick={e => { this.search(undefined, undefined, "code", "asc") }} />}
+
+                            {this.state.data.sortBy == "code" && this.state.data.sortDirection == "asc" &&
+                              <ArrowDropUpIcon
+                                color={this.state.data.sortBy == "code" ? "" : "disabled"}
+                                onClick={e => { this.search(undefined, undefined, "code", "desc") }} />}
+                          </a>
+                        </div>
+                      </TableCell>
+                      <TableCell style={{ textAlign: "center", width: "40%" }}>
+                        Nome
+                        <div style={{ display: "inline", verticalAlign: "top", padding: "0 5px" }}>
+                          <a href="#">
+                            {(this.state.data.sortBy != "name" || this.state.data.sortDirection == "desc") &&
+                              <ArrowDropDownIcon
+                                color={this.state.data.sortBy == "name" ? "" : "disabled"}
+                                onClick={e => { this.search(undefined, undefined, "name", "asc") }} />}
+
+                            {this.state.data.sortBy == "name" && this.state.data.sortDirection == "asc" &&
+                              <ArrowDropUpIcon
+                                color={this.state.data.sortBy == "name" ? "" : "disabled"}
+                                onClick={e => { this.search(undefined, undefined, "name", "desc") }} />}
+                          </a>
+                        </div>
+
+                      </TableCell>
+                      <TableCell style={{ textAlign: "center" }}>Status</TableCell>
+                      <TableCell style={{ textAlign: "center" }}>
+                        Criado em
+                        <div style={{ display: "inline", verticalAlign: "top", padding: "0 5px" }}>
+                          <a href="#">
+                            {(this.state.data.sortBy != "created_at" || this.state.data.sortDirection == "desc") &&
+                              <ArrowDropDownIcon
+                                color={this.state.data.sortBy == "created_at" ? "" : "disabled"}
+                                onClick={e => { this.search(undefined, undefined, "created_at", "asc") }} />}
+
+                            {this.state.data.sortBy == "created_at" && this.state.data.sortDirection == "asc" &&
+                              <ArrowDropUpIcon
+                                color={this.state.data.sortBy == "created_at" ? "" : "disabled"}
+                                onClick={e => { this.search(undefined, undefined, "created_at", "desc") }} />}
+                          </a>
+                        </div>
+                      </TableCell>
+                      <TableCell style={{ textAlign: "center" }}>Ações</TableCell>
                     </TableRow>
                   </TableHead>
 
@@ -375,18 +454,16 @@ class CustomerSearch extends React.Component {
                     {this.state.data.customers && this.state.data.customers.length > 0 && this.state.data.customers.map((prop, key) => {
                       return (
                         <TableRow key={key}>
-                          <TableCell>{prop.name}</TableCell>
-                          <TableCell>{prop.code}</TableCell>
-                          {/* <TableCell>{prop.address.city}</TableCell> */}
-                          <TableCell>{prop.active ? "Ativo" : "Desativado"}</TableCell>
-                          <TableCell><Moment date={prop.createdAt} format="DD/MM/YYYY" /></TableCell>
-                          <TableCell>
+                          <TableCell style={{ padding: "5px 16px", textAlign: "center" }}>{prop.code}</TableCell>
+                          <TableCell style={{ padding: "5px 16px", width: "40%" }}>{prop.name}</TableCell>
+                          <TableCell style={{ padding: "5px 16px", textAlign: "center" }}>{prop.active ? "Ativo" : "Desativado"}</TableCell>
+                          <TableCell style={{ padding: "5px 16px", textAlign: "center" }}><Moment date={prop.createdAt} format="DD/MM/YYYY" /></TableCell>
+                          <TableCell style={{ padding: "5px 16px", textAlign: "center" }}>
                             <Tooltip title="Detalhes" arrow>
                               <span>
                                 <Button justIcon round color="transparent"
                                   onClick={e => this.openDetails(prop)}>
                                   <PersonOutlineIcon />
-                                  
                                 </Button>
                               </span>
                             </Tooltip>
@@ -409,7 +486,7 @@ class CustomerSearch extends React.Component {
                               </span>
                             </Tooltip>
 
-                            
+
                           </TableCell>
                         </TableRow>
                       );
