@@ -14,7 +14,7 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 import CustomInput from "components/CustomInput/CustomInput.js";
 import Button from "components/CustomButtons/Button.js";
-import { NativeSelect, InputLabel, Table, TableHead, TableRow, TableCell, TableBody, IconButton } from "@material-ui/core";
+import { NativeSelect, InputLabel, Table, TableHead, TableRow, TableCell, TableBody, IconButton, Hidden } from "@material-ui/core";
 import { connect } from "react-redux";
 import { fetchCompanies } from "store/actions";
 import CardFooter from "components/Card/CardFooter";
@@ -25,14 +25,16 @@ import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import SkipNextIcon from '@material-ui/icons/SkipNext';
 import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
 
+import AssignmentOutlinedIcon from '@material-ui/icons/AssignmentOutlined';
 import Tooltip from '@material-ui/core/Tooltip';
 import ListIcon from '@material-ui/icons/List';
 import PersonOutlineIcon from '@material-ui/icons/PersonOutline';
 import AttachMoneyIcon from '@material-ui/icons/AttachMoney';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
+import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 
-
+import Notification from "components/Notifications/Notification";
 
 import Axios from "axios";
 import {
@@ -47,6 +49,8 @@ import {
   loadingResponseInterceptor,
   loadingResponseInterceptorOnError
 } from "components/Loading/interceptor";
+import { Gavel } from "@material-ui/icons";
+
 
 
 
@@ -112,17 +116,22 @@ class CustomerSearch extends React.Component {
         idCard: "",
         active: "true",
         pagination: {
-          limit: 1,
+          limit: 10,
           offset: 0
         }
       },
       data: {
-        limit: 20,
+        limit: 10,
         offset: 0,
         total: 0,
         sortBy: "created_by",
         sortDirection: "desc",
         customers: []
+      },
+      notification: {
+        display: false,
+        message: "",
+        severity: ""
       }
     }
 
@@ -201,7 +210,14 @@ class CustomerSearch extends React.Component {
         })
       })
       .catch(err => {
-
+        this.setState({
+          notification: {
+            ...this.state.notification,
+            display: true,
+            severity: "danger",
+            message: "Falha ao buscar clientes, tente novamente."
+          }
+        });
       });
 
   }
@@ -211,25 +227,40 @@ class CustomerSearch extends React.Component {
   }
 
   openAttendances(customer) {
-    this.props.history.push('/admin/attendances/' + customer.id);
-
+    this.props.history.push('/admin/attendances?customerId=' + customer.id + "&customerName=" + customer.name);
   }
 
-  openPayments(customer) {
-    this.props.history.push('/admin/payments/' + customer.id);
-
+  openProcesses(customer) {
+    this.props.history.push('/admin/processes?customerId=' + customer.id + "&customerName=" + customer.name);
   }
 
   render() {
     const { classes } = this.props;
     return (
       <div>
+
+        <Notification
+          severity={this.state.notification.severity}
+          message={this.state.notification.message}
+          open={this.state.notification.display}
+          onClose={() => {
+            this.setState({
+              notification: {
+                ...this.state.notification,
+                display: false,
+                severity: "",
+                message: ""
+              }
+            });
+          }}
+        />
+
         <GridContainer>
 
-          <GridItem sm={12} md={11}>
+          <GridItem xs={12} sm={12} md={11}>
             <GridContainer>
 
-              <GridItem sm={12} md={4} lg={6}>
+              <GridItem xs={12} sm={12} md={4} lg={6}>
                 <CustomInput
                   formControlProps={{
                     fullWidth: true,
@@ -244,7 +275,7 @@ class CustomerSearch extends React.Component {
                 />
               </GridItem>
 
-              <GridItem sm={12} md={2} lg={2}>
+              <GridItem xs={12} sm={12} md={2} lg={2}>
                 <CustomInput
                   formControlProps={{
                     fullWidth: true,
@@ -260,7 +291,7 @@ class CustomerSearch extends React.Component {
                 />
               </GridItem>
 
-              <GridItem sm={12} md={6} lg={4}>
+              <GridItem xs={12} sm={12} md={6} lg={4}>
                 <CompanySelect id="companyId" labelText="Unidade"
                   formControlProps={{
                     fullWidth: true,
@@ -276,16 +307,9 @@ class CustomerSearch extends React.Component {
               </GridItem>
             </GridContainer>
 
-
-            <a href="#" onClick={(e) => {
-              this.setState({ displayMoreFilters: !this.state.displayMoreFilters });
-              e.preventDefault();
-            }}>
-              <small>Exibir {this.state.displayMoreFilters && "menos"} {!this.state.displayMoreFilters && "mais"} filtros</small></a>
-
             {this.state.displayMoreFilters &&
               <GridContainer>
-                <GridItem sm={12} md={6} lg={3}>
+                <GridItem xs={12} sm={12} md={6} lg={3}>
                   <CustomInput
                     formControlProps={{
                       fullWidth: true,
@@ -303,24 +327,7 @@ class CustomerSearch extends React.Component {
                   />
                 </GridItem>
 
-                {/* <GridItem sm={12} md={6} lg={3}>
-              <CustomInput
-                formControlProps={{
-                  fullWidth: true,
-                  className: classes.margin + " " + classes.search
-                }}
-                inputProps={{
-                  placeholder: "Cidade",
-                  inputProps: {
-                    "width": "100%",
-                    onChange: e => this.setState({ params: { ...this.state.params, city: e.target.value } }),
-                    value: this.state.params.city
-                  }
-                }}
-              />
-            </GridItem> */}
-
-                <GridItem sm={12} md={6} lg={3}>
+                <GridItem xs={12} sm={12} md={6} lg={3}>
                   <CustomInput
                     formControlProps={{
                       fullWidth: true,
@@ -338,7 +345,7 @@ class CustomerSearch extends React.Component {
                   />
                 </GridItem>
 
-                <GridItem sm={12} md={6} lg={3}>
+                <GridItem xs={12} sm={12} md={6} lg={3}>
                   <CustomInput
                     formControlProps={{
                       fullWidth: true,
@@ -356,7 +363,7 @@ class CustomerSearch extends React.Component {
                   />
                 </GridItem>
 
-                <GridItem sm={12} md={6} lg={3}>
+                <GridItem xs={12} sm={12} md={6} lg={3}>
                   <CustomInput select={true} labelText="Status"
                     inputProps={{
                       onChange: e => {
@@ -371,21 +378,36 @@ class CustomerSearch extends React.Component {
                     }}>
                     <option value={"all"}>Todos</option>
                     <option value={"true"}>Ativo</option>
-                    <option value={"false"}>Desativado</option>                    
+                    <option value={"false"}>Desativado</option>
                   </CustomInput>
                 </GridItem>
 
               </GridContainer>}
 
+            <a href="#" onClick={(e) => {
+              this.setState({ displayMoreFilters: !this.state.displayMoreFilters });
+              e.preventDefault();
+            }}>
+              <small>Exibir {this.state.displayMoreFilters && "menos"} {!this.state.displayMoreFilters && "mais"} filtros</small></a>
 
           </GridItem>
 
 
-          <GridItem sm={12} md={1} style={{ textAlign: "center" }}>
-            <IconButton size="large" onClick={e => this.search()}>
-              <Search />
-            </IconButton>
-          </GridItem>
+          <Hidden only={["xs", "sm"]}>
+            <GridItem md={1} style={{ textAlign: "center" }}>
+              <IconButton size="large" onClick={e => this.search()}>
+                <Search />
+              </IconButton>
+            </GridItem>
+          </Hidden>
+
+          <Hidden only={["md", "lg", "xl"]}>
+            <GridItem xs={12} sm={12} style={{ textAlign: "center" }}>
+              <Button color="primary" size="large" onClick={e => this.search()}>
+                <Search /> Buscar
+            </Button>
+            </GridItem>
+          </Hidden>
 
         </GridContainer>
 
@@ -396,22 +418,24 @@ class CustomerSearch extends React.Component {
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell style={{ textAlign: "center" }}>
-                        Código
+                      <Hidden only={["xs"]}>
+                        <TableCell style={{ textAlign: "center" }}>
+                          Código
                         <div style={{ display: "inline", verticalAlign: "top", padding: "0 5px" }}>
-                          <a href="#">
-                            {(this.state.data.sortBy != "code" || this.state.data.sortDirection == "desc") &&
-                              <ArrowDropDownIcon
-                                color={this.state.data.sortBy == "code" ? "" : "disabled"}
-                                onClick={e => { this.search(undefined, undefined, "code", "asc") }} />}
+                            <a href="#">
+                              {(this.state.data.sortBy != "code" || this.state.data.sortDirection == "desc") &&
+                                <ArrowDropDownIcon
+                                  color={this.state.data.sortBy == "code" ? "" : "disabled"}
+                                  onClick={e => { this.search(undefined, undefined, "code", "asc") }} />}
 
-                            {this.state.data.sortBy == "code" && this.state.data.sortDirection == "asc" &&
-                              <ArrowDropUpIcon
-                                color={this.state.data.sortBy == "code" ? "" : "disabled"}
-                                onClick={e => { this.search(undefined, undefined, "code", "desc") }} />}
-                          </a>
-                        </div>
-                      </TableCell>
+                              {this.state.data.sortBy == "code" && this.state.data.sortDirection == "asc" &&
+                                <ArrowDropUpIcon
+                                  color={this.state.data.sortBy == "code" ? "" : "disabled"}
+                                  onClick={e => { this.search(undefined, undefined, "code", "desc") }} />}
+                            </a>
+                          </div>
+                        </TableCell>
+                      </Hidden>
                       <TableCell style={{ textAlign: "center", width: "40%" }}>
                         Nome
                         <div style={{ display: "inline", verticalAlign: "top", padding: "0 5px" }}>
@@ -429,23 +453,27 @@ class CustomerSearch extends React.Component {
                         </div>
 
                       </TableCell>
-                      <TableCell style={{ textAlign: "center" }}>Status</TableCell>
-                      <TableCell style={{ textAlign: "center" }}>
-                        Criado em
+                      <Hidden only={["xs", "sm", "md"]}>
+                        <TableCell style={{ textAlign: "center" }}>Status</TableCell>
+                      </Hidden>
+                      <Hidden only={["xs", "sm", "md"]}>
+                        <TableCell style={{ textAlign: "center" }}>
+                          Criado em
                         <div style={{ display: "inline", verticalAlign: "top", padding: "0 5px" }}>
-                          <a href="#">
-                            {(this.state.data.sortBy != "created_at" || this.state.data.sortDirection == "desc") &&
-                              <ArrowDropDownIcon
-                                color={this.state.data.sortBy == "created_at" ? "" : "disabled"}
-                                onClick={e => { this.search(undefined, undefined, "created_at", "asc") }} />}
+                            <a href="#">
+                              {(this.state.data.sortBy != "created_at" || this.state.data.sortDirection == "desc") &&
+                                <ArrowDropDownIcon
+                                  color={this.state.data.sortBy == "created_at" ? "" : "disabled"}
+                                  onClick={e => { this.search(undefined, undefined, "created_at", "asc") }} />}
 
-                            {this.state.data.sortBy == "created_at" && this.state.data.sortDirection == "asc" &&
-                              <ArrowDropUpIcon
-                                color={this.state.data.sortBy == "created_at" ? "" : "disabled"}
-                                onClick={e => { this.search(undefined, undefined, "created_at", "desc") }} />}
-                          </a>
-                        </div>
-                      </TableCell>
+                              {this.state.data.sortBy == "created_at" && this.state.data.sortDirection == "asc" &&
+                                <ArrowDropUpIcon
+                                  color={this.state.data.sortBy == "created_at" ? "" : "disabled"}
+                                  onClick={e => { this.search(undefined, undefined, "created_at", "desc") }} />}
+                            </a>
+                          </div>
+                        </TableCell>
+                      </Hidden>
                       <TableCell style={{ textAlign: "center" }}>Ações</TableCell>
                     </TableRow>
                   </TableHead>
@@ -454,10 +482,10 @@ class CustomerSearch extends React.Component {
                     {this.state.data.customers && this.state.data.customers.length > 0 && this.state.data.customers.map((prop, key) => {
                       return (
                         <TableRow key={key}>
-                          <TableCell style={{ padding: "5px 16px", textAlign: "center" }}>{prop.code}</TableCell>
+                          <Hidden only={["xs"]}><TableCell style={{ padding: "5px 16px", textAlign: "center" }}>{prop.code}</TableCell></Hidden>
                           <TableCell style={{ padding: "5px 16px", width: "40%" }}>{prop.name}</TableCell>
-                          <TableCell style={{ padding: "5px 16px", textAlign: "center" }}>{prop.active ? "Ativo" : "Desativado"}</TableCell>
-                          <TableCell style={{ padding: "5px 16px", textAlign: "center" }}><Moment date={prop.createdAt} format="DD/MM/YYYY" /></TableCell>
+                          <Hidden only={["xs", "sm", "md"]}><TableCell style={{ padding: "5px 16px", textAlign: "center" }}>{prop.active ? "Ativo" : "Desativado"}</TableCell></Hidden>
+                          <Hidden only={["xs", "sm", "md"]}><TableCell style={{ padding: "5px 16px", textAlign: "center" }}><Moment date={prop.createdAt} format="DD/MM/YYYY" /></TableCell></Hidden>
                           <TableCell style={{ padding: "5px 16px", textAlign: "center" }}>
                             <Tooltip title="Detalhes" arrow>
                               <span>
@@ -472,16 +500,16 @@ class CustomerSearch extends React.Component {
                               <span>
                                 <Button justIcon round color="transparent"
                                   onClick={e => this.openAttendances(prop)}>
-                                  <ListIcon />
+                                  <AssignmentOutlinedIcon />
                                 </Button>
                               </span>
                             </Tooltip>
 
-                            <Tooltip title="Pagamentos" arrow>
+                            <Tooltip title="Processos" arrow>
                               <span>
                                 <Button justIcon round color="transparent"
-                                  onClick={e => this.openPayments(prop)}>
-                                  <AttachMoneyIcon />
+                                  onClick={e => this.openProcesses(prop)}>
+                                  <Gavel />
                                 </Button>
                               </span>
                             </Tooltip>
@@ -495,8 +523,9 @@ class CustomerSearch extends React.Component {
                 </Table>
 
                 {this.state.data.customers.length == 0 &&
-                  <div style={{ textAlign: "center", width: "100%" }}>
-                    <h4>Nenhum cliente cadastrado, clique em <span style={{ fontWeight: "bold" }}>Adicionar</span> para criar um novo cliente.</h4>
+                  <div style={{ width: "100%" }}>
+                    <h4 style={{ textAlign: "center" }}>Nenhum cliente encontrado.</h4>
+                    <span><ArrowDownwardIcon />Clique em <span style={{ fontWeight: "bold" }}>Adicionar</span> para criar um novo cliente.</span>
                   </div>}
 
                 <GridContainer>

@@ -1,121 +1,207 @@
+import { Card, Divider, Table, TableBody, TableCell, TableHead, TableRow, Tooltip } from "@material-ui/core";
+import CardBody from "components/Card/CardBody";
+import GridContainer from "components/Grid/GridContainer";
+import GridItem from "components/Grid/GridItem";
 import React from "react";
-import { connect } from 'react-redux'
+import Moment from "react-moment";
 
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-// core components
-import GridItem from "components/Grid/GridItem.js";
-import GridContainer from "components/Grid/GridContainer.js";
-import Table from "components/Table/Table.js";
-import Card from "components/Card/Card.js";
-import CardHeader from "components/Card/CardHeader.js";
-import CardBody from "components/Card/CardBody.js";
+import { withRouter } from "react-router-dom";
+import { AssignmentOutlined, ScheduleOutlined } from "@material-ui/icons";
 
-const styles = {
-  cardCategoryWhite: {
-    "&,& a,& a:hover,& a:focus": {
-      color: "rgba(255,255,255,.62)",
-      margin: "0",
-      fontSize: "14px",
-      marginTop: "0",
-      marginBottom: "0"
-    },
-    "& a,& a:hover,& a:focus": {
-      color: "#FFFFFF"
-    }
-  },
-  cardTitleWhite: {
-    color: "#FFFFFF",
-    marginTop: "0px",
-    minHeight: "auto",
-    fontWeight: "300",
-    fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
-    marginBottom: "3px",
-    textDecoration: "none",
-    "& small": {
-      color: "#777",
-      fontSize: "65%",
-      fontWeight: "400",
-      lineHeight: "1"
-    }
+
+import { authRequestInterceptor, authRequestInterceptorOnError, authResponseInterceptorOnError, authResponseInterceptor } from "auth/interceptor";
+import { loadingRequestInterceptor, loadingRequestInterceptorOnError, loadingResponseInterceptor, loadingResponseInterceptorOnError } from "components/Loading/interceptor";
+import Axios from "axios";
+import { connect } from "react-redux";
+import BirthdayComponent from "./BirthdayComponent";
+
+
+const axios = Axios.create();
+axios.interceptors.request.use(authRequestInterceptor, authRequestInterceptorOnError);
+axios.interceptors.response.use(authResponseInterceptor, authResponseInterceptorOnError);
+
+axios.interceptors.request.use(loadingRequestInterceptor, loadingRequestInterceptorOnError);
+axios.interceptors.response.use(loadingResponseInterceptor, loadingResponseInterceptorOnError);
+
+
+class CustomerPage extends React.Component {
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      attendances: {
+        loading: true,
+        err: false,
+        data: {
+          limit: 5,
+          offset: 0,
+          total: 0,
+          data: []
+        }
+      },
+
+      schedules: {
+        loading: true,
+        err: false,
+        data: {
+          limit: 5,
+          offset: 0,
+          total: 0,
+          data: []
+        }
+      },
+    };
   }
-};
+  componentDidMount() {
 
-const useStyles = makeStyles(styles);
+  }
 
-function HomePage({ ...rest }) {
-  const classes = useStyles();
+  render() {
+    return (
+      <div>
 
-  return (
-    <div>
-      {JSON.stringify(rest)}
-    </div>
+        <GridContainer>
+          <GridItem xs={12}>
+            <h1 style={{ textAlign: "right", margin: "0" }}><Moment locale="pt-br" format="dddd" /></h1>
+            <h3 style={{ textAlign: "right", marginTop: "0" }}><small><Moment format="D" /> de <Moment locale="pt-br" format="MMMM" /></small></h3>
+          </GridItem>
+        </GridContainer>
 
-    // <GridContainer>
-    //   <GridItem xs={12} sm={12} md={12}>
-    //     <Card>
-    //       <CardHeader color="primary">
-    //         <h4 className={classes.cardTitleWhite}>Simple Table</h4>
-    //         <p className={classes.cardCategoryWhite}>
-    //           Here is a subtitle for this table
-    //         </p>
-    //       </CardHeader>
-    //       <CardBody>
-    //         <Table
-    //           tableHeaderColor="primary"
-    //           tableHead={["Name", "Country", "City", "Salary"]}
-    //           tableData={[
-    //             ["Dakota Rice", "Niger", "Oud-Turnhout", "$36,738"],
-    //             ["Minerva Hooper", "Curaçao", "Sinaai-Waas", "$23,789"],
-    //             ["Sage Rodriguez", "Netherlands", "Baileux", "$56,142"],
-    //             ["Philip Chaney", "Korea, South", "Overland Park", "$38,735"],
-    //             ["Doris Greene", "Malawi", "Feldkirchen in Kärnten", "$63,542"],
-    //             ["Mason Porter", "Chile", "Gloucester", "$78,615"]
-    //           ]}
-    //         />
-    //       </CardBody>
-    //     </Card>
-    //   </GridItem>
-    //   <GridItem xs={12} sm={12} md={12}>
-    //     <Card plain>
-    //       <CardHeader plain color="primary">
-    //         <h4 className={classes.cardTitleWhite}>
-    //           Table on Plain Background
-    //         </h4>
-    //         <p className={classes.cardCategoryWhite}>
-    //           Here is a subtitle for this table
-    //         </p>
-    //       </CardHeader>
-    //       <CardBody>
-    //         <Table
-    //           tableHeaderColor="primary"
-    //           tableHead={["ID", "Name", "Country", "City", "Salary"]}
-    //           tableData={[
-    //             ["1", "Dakota Rice", "$36,738", "Niger", "Oud-Turnhout"],
-    //             ["2", "Minerva Hooper", "$23,789", "Curaçao", "Sinaai-Waas"],
-    //             ["3", "Sage Rodriguez", "$56,142", "Netherlands", "Baileux"],
-    //             [
-    //               "4",
-    //               "Philip Chaney",
-    //               "$38,735",
-    //               "Korea, South",
-    //               "Overland Park"
-    //             ],
-    //             [
-    //               "5",
-    //               "Doris Greene",
-    //               "$63,542",
-    //               "Malawi",
-    //               "Feldkirchen in Kärnten"
-    //             ],
-    //             ["6", "Mason Porter", "$78,615", "Chile", "Gloucester"]
-    //           ]}
-    //         />
-    //       </CardBody>
-    //     </Card>
-    //   </GridItem>
-    // </GridContainer>
-  );
+
+        <GridContainer>
+
+          <GridItem xs={12} sm={12} md={12} lg={6} style={{ marginBottom: "30px" }}>
+
+            <Card>
+              <CardBody style={{ paddingBottom: "30px" }}>
+                <GridContainer>
+                  <GridItem xs={12}>
+                    <a href="/admin/attendances" onClick={e => { e.preventDefault(); this.props.history.push("/admin/attendances") }} style={{ float: "right" }}><small>Ver todos</small></a>
+                    <h4 style={{ marginTop: "0" }}><AssignmentOutlined style={{ verticalAlign: "sub", marginRight: "8px" }} /> Atendimentos</h4>
+                  </GridItem>
+
+                  <GridItem xs={12}>
+                    <h4 style={{ margin: "0" }}>Pendências</h4>
+                  </GridItem>
+
+                  <GridItem xs={12}>
+                    <p style={{ textAlign: "center" }}>Nenhum atendimento com pendência</p>
+                  </GridItem>
+
+                  <GridItem xs={12}>
+                    <Divider />
+                  </GridItem>
+
+                  <GridItem xs={12}>
+                    <h4 style={{ marginBottom: "0" }}>Em aberto</h4>
+                  </GridItem>
+
+                  <GridItem xs={12}>
+                    {/* <Table>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell style={{ width: "20%", textAlign: "center" }}>Cobrança</TableCell>
+                          <TableCell style={{ width: "30%" }}>Danilo Perassoli de Souza</TableCell>
+                          <TableCell style={{ textAlign: "center" }}>Quarta, 14 às 14:30</TableCell>
+                          <TableCell style={{ width: "10%" }}>
+                            <Tooltip title="Selecionar" arrow>
+                              <SearchOutlined style={{ cursor: "pointer" }} fontSize="small" />
+                            </Tooltip>
+
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table> */}
+                    <p style={{ textAlign: "center" }}>Nenhum atendimento em aberto</p>
+                  </GridItem>
+
+                </GridContainer>
+
+              </CardBody>
+            </Card>
+
+          </GridItem>
+
+
+          <GridItem xs={12} sm={12} md={12} lg={6} style={{ marginBottom: "30px" }}>
+
+            <Card>
+              <CardBody style={{ paddingBottom: "30px" }}>
+                <GridContainer>
+                  <GridItem xs={12}>
+                    <a href="/admin/attendances" onClick={e => { e.preventDefault(); this.props.history.push("/admin/schedules") }} style={{ float: "right" }}><small>Ver todos</small></a>
+                    <h4 style={{ marginTop: "0" }}> <ScheduleOutlined style={{ verticalAlign: "sub", marginRight: "8px" }} /> Agendamentos</h4>
+                  </GridItem>
+
+                  <GridItem xs={12}>
+                    <h4 style={{ margin: "0" }}>Hoje</h4>
+                  </GridItem>
+
+                  <GridItem xs={12}>
+                    {/* <Table>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell style={{ width: "20%", textAlign: "center" }}>Retorno</TableCell>
+                          <TableCell style={{ width: "30%" }}>Danilo Perassoli de Souza</TableCell>
+                          <TableCell style={{ textAlign: "center" }}>14:30</TableCell>
+                          <TableCell style={{ width: "10%" }}>
+                            <Tooltip title="Selecionar" arrow>
+                              <SearchOutlined style={{ cursor: "pointer" }} fontSize="small" />
+                            </Tooltip>
+
+                          </TableCell>
+                        </TableRow>
+
+                      </TableBody>
+                    </Table> */}
+                    <p style={{ textAlign: "center" }}>Nenhum agendamento para hoje</p>
+                  </GridItem>
+
+                  <GridItem xs={12}>
+                    <Divider />
+                  </GridItem>
+
+                  <GridItem xs={12}>
+                    <h4 style={{ marginBottom: "0" }}>Próximos</h4>
+                  </GridItem>
+
+                  <GridItem xs={12}>
+                    {/* <Table>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell style={{ width: "20%", textAlign: "center" }}>Cobrança</TableCell>
+                          <TableCell style={{ width: "30%" }}>Danilo Perassoli de Souza</TableCell>
+                          <TableCell style={{ textAlign: "center" }}>Quarta, 14 às 14:30</TableCell>
+                          <TableCell style={{ width: "10%" }}>
+                            <Tooltip title="Selecionar" arrow>
+                              <SearchOutlined style={{ cursor: "pointer" }} fontSize="small" />
+                            </Tooltip>
+
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table> */}
+                    <p style={{ textAlign: "center" }}>Nenhum agendamento para os próximos dias</p>
+                  </GridItem>
+                </GridContainer>
+
+              </CardBody>
+            </Card>
+
+          </GridItem>
+
+          <GridItem xs={12} sm={12} md={12} lg={6} style={{ marginBottom: "30px" }}>
+            <Card>
+              <CardBody style={{ paddingBottom: "30px" }}>
+                <BirthdayComponent />
+              </CardBody>
+            </Card>
+          </GridItem>
+        </GridContainer>
+      </div>
+    );
+  }
 }
 
 const mapStateToProps = state => {
@@ -124,4 +210,5 @@ const mapStateToProps = state => {
   };
 }
 
-export default connect(mapStateToProps)(HomePage);
+export default connect(mapStateToProps)(
+  withRouter(CustomerPage));

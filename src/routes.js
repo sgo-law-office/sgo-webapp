@@ -1,27 +1,24 @@
 
 // @material-ui/icons
-import Dashboard from "@material-ui/icons/Dashboard";
 import Person from "@material-ui/icons/Person";
-import AddIcon from '@material-ui/icons/Add';
 import Home from "@material-ui/icons/Home";
-import LibraryBooks from "@material-ui/icons/LibraryBooks";
-import BubbleChart from "@material-ui/icons/BubbleChart";
-import Notifications from "@material-ui/icons/Notifications";
 import AttachMoneyIcon from '@material-ui/icons/AttachMoney';
-
+import ScheduleIcon from '@material-ui/icons/Schedule';
+import GavelIcon from '@material-ui/icons/Gavel';
+import AssignmentIcon from '@material-ui/icons/Assignment';
+import DescriptionIcon from '@material-ui/icons/Description';
 
 // core components/views for Admin layout
-import DashboardPage from "views/Dashboard/Dashboard.js";
 import UserProfile from "views/UserProfile/UserProfile.js";
-import TableList from "views/TableList/TableList.js";
-import Typography from "views/Typography/Typography.js";
-import Icons from "views/Icons/Icons.js";
-import NotificationsPage from "views/Notifications/Notifications.js";
-
 import HomePage from "views/Home/HomePage.js";
 import CustomerPage from "views/Customer/CustomerPage.js";
 import AttendancePage from "views/Attendance/AttendancePage.js";
+import ContractPage from "views/Contract/ContractPage.js";
+import ProcessPage from "views/Process/ProcessPage.js";
+import SchedulePage from "views/Schedule/SchedulePage.js";
 import PaymentPage from "views/Payment/PaymentPage.js";
+import HelpPage from "views/Help/HelpPage";
+
 
 const dashboardRoutes = [
   {
@@ -29,7 +26,7 @@ const dashboardRoutes = [
     name: "Início",
     icon: Home,
     component: HomePage,
-    layout: "/admin"
+    layout: "/admin",
   },
   {
     path: "/customers",
@@ -42,8 +39,29 @@ const dashboardRoutes = [
   {
     path: "/attendances",
     name: "Atendimentos",
-    icon: "content_paste",
+    icon: AssignmentIcon,
     component: AttendancePage,
+    layout: "/admin"
+  },
+  {
+    path: "/contracts",
+    name: "Contratos",
+    icon: DescriptionIcon,
+    component: ContractPage,
+    layout: "/admin"
+  },
+  {
+    path: "/processes",
+    name: "Processos",
+    icon: GavelIcon,
+    component: ProcessPage,
+    layout: "/admin"
+  },
+  {
+    path: "/schedules",
+    name: "Agendamentos",
+    icon: ScheduleIcon,
+    component: SchedulePage,
     layout: "/admin"
   },
   {
@@ -54,12 +72,18 @@ const dashboardRoutes = [
     layout: "/admin"
   },
   {
-    path: "/user",
+    path: "/me",
     name: "Perfil",
-    icon: Person,
     component: UserProfile,
     layout: "/admin",
     hidden: true
+  },
+  {
+    path: "/help",
+    name: "Ajuda",
+    component: HelpPage,
+    icon: "help",
+    layout: "/admin"
   }
   // {
   //   path: "/table",

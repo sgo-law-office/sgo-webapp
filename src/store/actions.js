@@ -13,6 +13,11 @@ import { loadingResponseInterceptorOnError } from 'components/Loading/intercepto
 export const LOGIN_TOKEN_SUCCESS = "AAD_LOGIN_SUCCESS";
 export const LOGOUT_SUCCESS = "AAD_LOGOUT_SUCCESS";
 
+export const AAD_INITIALIZING = "AAD_INITIALIZING";
+export const AAD_ACQUIRED_ID_TOKEN_ERROR = "AAD_ACQUIRED_ID_TOKEN_ERROR";
+export const AAD_LOGIN_ERROR = "AAD_LOGIN_ERROR";
+export const AAD_INITIALIZED = "AAD_INITIALIZED";
+
 // setup
 export const SUCCESS_GRAPH_USER_DATA = "SUCCESS_GRAPH_USER_DATA";
 export const ERROR_GRAPH_USER_DATA = "ERROR_GRAPH_USER_DATA";
@@ -66,6 +71,7 @@ export const fetchGraphUserData = () => {
                     });
             })
             .catch(err => {
+                console.log(">>>>>>>>>>>>> authProvider.getAccessToken() ERROR", err);
                 dispatch({
                     type: ERROR_GRAPH_USER_DATA,
                     payload: err

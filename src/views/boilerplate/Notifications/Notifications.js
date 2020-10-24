@@ -7,14 +7,14 @@ import { makeStyles } from "@material-ui/core/styles";
 // @material-ui/icons
 import AddAlert from "@material-ui/icons/AddAlert";
 // core components
-import GridItem from "components/Grid/GridItem.js";
-import GridContainer from "components/Grid/GridContainer.js";
+import GridItem from "views/boilerplate/TableList/node_modules/views/boilerplate/Dashboard/node_modules/components/Grid/GridItem.js.js.js";
+import GridContainer from "views/boilerplate/TableList/node_modules/views/boilerplate/Dashboard/node_modules/components/Grid/GridContainer.js.js.js";
 import Button from "components/CustomButtons/Button.js";
 import SnackbarContent from "components/Snackbar/SnackbarContent.js";
 import Snackbar from "components/Snackbar/Snackbar.js";
-import Card from "components/Card/Card.js";
-import CardHeader from "components/Card/CardHeader.js";
-import CardBody from "components/Card/CardBody.js";
+import Card from "views/boilerplate/TableList/node_modules/views/boilerplate/Dashboard/node_modules/components/Card/Card.js.js.js";
+import CardHeader from "views/boilerplate/TableList/node_modules/views/boilerplate/Dashboard/node_modules/components/Card/CardHeader.js.js.js";
+import CardBody from "views/boilerplate/TableList/node_modules/views/boilerplate/Dashboard/node_modules/components/Card/CardBody.js.js.js";
 
 const styles = {
   cardCategoryWhite: {
@@ -61,7 +61,7 @@ export default function Notifications() {
     return function cleanup() {
       // to stop the warning of calling setState of unmounted component
       var id = window.setTimeout(null, 0);
-      while (id--) {
+      while (id--) {''
         window.clearTimeout(id);
       }
     };

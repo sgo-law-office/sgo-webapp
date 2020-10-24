@@ -81,6 +81,8 @@ export default function (state = initialState, action) {
       }
 
     case ERROR_FETCH_ACCOUNT:
+      return state;
+      
     case ERROR_FETCH_COMPANIES:
     case ERROR_ACCOUNT_CREATE:
       return {

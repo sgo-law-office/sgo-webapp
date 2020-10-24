@@ -1,6 +1,6 @@
 import React from "react";
 
-class PaymentPage extends React.Component {
+class ContractPage extends React.Component {
 
   render() {
     return (
@@ -11,4 +11,4 @@ class PaymentPage extends React.Component {
   }
 }
 
-export default PaymentPage;
+export default ContractPage;

@@ -14,7 +14,7 @@ const useStyles = makeStyles(styles);
 
 export default function Snackbar(props) {
   const classes = useStyles();
-  const { message, color, close, icon, place, open } = props;
+  const { message, color, close, icon, place, open, children } = props;
   var action = [];
   const messageClasses = classNames({
     [classes.iconMessage]: icon !== undefined
@@ -44,13 +44,15 @@ export default function Snackbar(props) {
             : "right"
       }}
       open={open}
-      message={
+      message={children != null? children : 
         <div>
           {icon !== undefined ? <props.icon className={classes.icon} /> : null}
           <span className={messageClasses}>{message}</span>
         </div>
       }
       action={action}
+      autoHideDuration={props.autoHideDuration}
+      onClose={props.closeNotification}
       ContentProps={{
         classes: {
           root: classes.root + " " + classes[color],
@@ -69,5 +71,6 @@ Snackbar.propTypes = {
   icon: PropTypes.object,
   place: PropTypes.oneOf(["tl", "tr", "tc", "br", "bl", "bc"]),
   open: PropTypes.bool,
-  closeNotification: PropTypes.func
+  closeNotification: PropTypes.func,
+  autoHideDuration: PropTypes.number
 };

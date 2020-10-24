@@ -3,8 +3,7 @@ import { connect } from 'react-redux';
 
 import { Switch, Route, Redirect, withRouter } from "react-router-dom";
 // creates a beautiful scrollbar
-import PerfectScrollbar from "perfect-scrollbar";
-import "perfect-scrollbar/css/perfect-scrollbar.css";
+
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 // core components
@@ -27,6 +26,7 @@ import { store } from "store/store";
 import Setup from "views/Setup/Setup";
 
 import { fetchGraphUserData, fetchAccount } from "store/actions";
+import GeneralNotification from "../components/Notifications/GeneralNotification";
 
 let ps;
 let ack;
@@ -58,9 +58,6 @@ function Admin({ ...rest }) {
   // styles
   const classes = useStyles();
 
-  // ref to help us initialize PerfectScrollbar on windows devices
-  const mainPanel = React.createRef();
-
   // states and functions
   const [image] = React.useState(bgImage);
   const [color] = React.useState("blue");
@@ -74,33 +71,17 @@ function Admin({ ...rest }) {
     }
   };
 
-  // initialize and destroy the PerfectScrollbar plugin
-  React.useEffect(() => {
-    if (navigator.platform.indexOf("Win") > -1) {
-      ps = new PerfectScrollbar(mainPanel.current, {
-        suppressScrollX: true,
-        suppressScrollY: false
-      });
-      document.body.style.overflow = "hidden";
-    }
-    window.addEventListener("resize", resizeFunction);
-
-    // Specify how to clean up after this effect:
-    return function cleanup() {
-      if (navigator.platform.indexOf("Win") > -1) {
-        ps.destroy();
-      }
-      window.removeEventListener("resize", resizeFunction);
-    };
-
-  }, [mainPanel]);
 
   return (
     <div className={classes.wrapper}>
+
+      <GeneralNotification />
+
       <AzureAD provider={authProvider} reduxStore={store}>
         {
           ({ login, logout, authenticationState, error, accountInfo }) => {
             switch (authenticationState) {
+
               case AuthenticationState.Authenticated:
                 if (rest.jwt && !rest.account) {
                   if (!ack) {
@@ -125,14 +106,14 @@ function Admin({ ...rest }) {
                         color={color}
                         {...rest}
                       />
-                      <div className={classes.mainPanel} ref={mainPanel}>
+                      <div className={classes.mainPanel}>
                         <Navbar
                           routes={routes}
                           handleDrawerToggle={handleDrawerToggle}
                           logout={logout}
                           {...rest}
                         />
-                        <div className={classes.content} style={{ minHeight: "calc(100vh - 224px)"}}>
+                        <div className={classes.content} style={{ minHeight: "calc(100vh - 224px)" }}>
                           <div className={classes.container}>{switchRoutes}</div>
                         </div>
 
@@ -141,19 +122,20 @@ function Admin({ ...rest }) {
                     </div>
                   );
                 }
+                return <img style={{ height: "60px" }} src="/load-small.gif" alt="Carregando..." />;
 
               case AuthenticationState.Unauthenticated:
                 return (
-                  <LoginPage login={login}></LoginPage>
+                  <LoginPage login={login}>Unauthenticated</LoginPage>
                 );
 
               case AuthenticationState.InProgress:
                 return (
-                  <LoginPage login={login} loading={true}></LoginPage>
+                  <LoginPage login={login} loading={true}>InProgress</LoginPage>
                 );
               default:
                 return (
-                  <LoginPage login={login} loading={true}></LoginPage>
+                  <LoginPage login={login} loading={true}>Default</LoginPage>
                 );
             }
           }

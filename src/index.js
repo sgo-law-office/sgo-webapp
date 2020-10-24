@@ -11,6 +11,8 @@ import Admin from "layouts/Admin.js";
 import "assets/css/material-dashboard-react.css?v=1.9.0";
 import { LinearProgress } from "@material-ui/core";
 
+import 'moment/locale/pt-br';
+
 ReactDOM.render(
   <BrowserRouter>
     <LinearProgress className="loading-progress-bar" variant="indeterminate" />

@@ -63,8 +63,8 @@ export const authResponseInterceptorOnError = async (error) => {
     console.log(error.config);
 
     if (error.response.status === 403) {
-        console.log("403 PORRA");
         authProvider.getIdToken().then(data => {
+            console.log("403 from response.")
             console.log(data)
             console.log(data.idToken.rawIdToken)
         }).error(console.error);

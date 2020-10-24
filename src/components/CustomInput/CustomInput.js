@@ -26,6 +26,7 @@ export default function CustomInput(props) {
     error,
     success,
     select,
+    textarea,
     children
   } = props;
 
@@ -67,8 +68,10 @@ export default function CustomInput(props) {
         >
           {children}
         </NativeSelect>}
+
       {!select && !children &&
         <Input
+          multiline={textarea}
           classes={{
             root: marginTop,
             disabled: classes.disabled,
@@ -79,6 +82,7 @@ export default function CustomInput(props) {
         />}
 
       {!select && children && <div>{children}</div>}
+
       {error ? (
         <Clear className={classes.feedback + " " + classes.labelRootError} />
       ) : success ? (

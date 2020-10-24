@@ -213,7 +213,7 @@ function AdminNavbarLinks(props) {
                 <ClickAwayListener onClickAway={handleCloseProfile}>
                   <MenuList role="menu">
                     <MenuItem
-                      onClick={() => { handleCloseProfile(); props.history.push('/admin/user') }}
+                      onClick={() => { handleCloseProfile(); props.history.push('/admin/me') }}
                       className={classes.dropdownItem}
                     >
                       Perfil

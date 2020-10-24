@@ -17,6 +17,9 @@ class CompanySelect extends React.Component {
             <div>
                 {this.props.common.data.companies &&
                     <CustomInput select={true} {...other}
+                        labelProps={{
+                            shrink: true
+                        }}
                         formControlProps={formControlProps}
                         inputProps={inputProps}>
                         {this.props.common.data.companies.map((e, i) => {

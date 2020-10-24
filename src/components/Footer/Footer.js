@@ -6,10 +6,11 @@ import ListItem from "@material-ui/core/ListItem";
 import List from "@material-ui/core/List";
 // core components
 import styles from "assets/jss/material-dashboard-react/components/footerStyle.js";
+import { withRouter } from "react-router-dom";
 
 const useStyles = makeStyles(styles);
 
-export default function Footer(props) {
+export default withRouter(function Footer(props) {
   const classes = useStyles();
   return (
     <footer className={classes.footer}>
@@ -32,7 +33,7 @@ export default function Footer(props) {
               </a>
             </ListItem> */}
             <ListItem className={classes.inlineBlock}>
-              <a href="#ajuda" className={classes.block}>
+              <a href="#" className={classes.block} onClick={(e) => { e.preventDefault(); props.history.push('/admin/help') }}>
                 Ajuda
               </a>
             </ListItem>
@@ -45,4 +46,4 @@ export default function Footer(props) {
       </div>
     </footer>
   );
-}
+})

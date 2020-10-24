@@ -8,10 +8,10 @@ import Primary from "components/Typography/Primary.js";
 import Info from "components/Typography/Info.js";
 import Success from "components/Typography/Success.js";
 import Warning from "components/Typography/Warning.js";
-import Danger from "components/Typography/Danger.js";
-import Card from "components/Card/Card.js";
-import CardHeader from "components/Card/CardHeader.js";
-import CardBody from "components/Card/CardBody.js";
+import Danger from "views/boilerplate/Dashboard/node_modules/components/Typography/Danger.js.js";
+import Card from "views/boilerplate/Dashboard/node_modules/components/Card/Card.js.js";
+import CardHeader from "views/boilerplate/Dashboard/node_modules/components/Card/CardHeader.js.js";
+import CardBody from "views/boilerplate/Dashboard/node_modules/components/Card/CardBody.js.js";
 
 const styles = {
   typo: {
