@@ -266,8 +266,13 @@ class AttendanceSearch extends React.Component {
                                         className: classes.margin + " " + classes.search
                                     }}>
                                     <option value={"all"}>Todos</option>
-                                    {/* <option value={"true"}>Iniciados</option>
-                                    <option value={"false"}>Finalizados</option> */}
+                                    <option value={"CREATED"}>Iniciado</option>
+                                    <option value={"IN_PROGRESS"}>Em progresso</option>
+                                    <option value={"WAITING_CUSTOMER"}>Aguardando Cliente</option>
+                                    <option value={"WAITING_INTERNAL"}>Aguardando Pendência</option>
+                                    <option value={"WAITING_SCHEDULE"}>Aguardando Retorno</option>
+                                    <option value={"WAITING_OTHER"}>Aguardando</option>
+                                    <option value={"CONCLUDED"}>Concluído</option>
                                 </CustomInput>
                             </GridItem>
 
@@ -444,7 +449,19 @@ class AttendanceSearch extends React.Component {
                                             return (
                                                 <TableRow key={key}>
                                                     <TableCell style={{ padding: "5px 16px", width: "40%" }}>{prop.customerName}</TableCell>
-                                                    <Hidden only={["xs"]}><TableCell style={{ padding: "5px 16px", textAlign: "center" }}>{prop.status == "CREATED" ? "Iniciado" : "Desconhecido"}</TableCell></Hidden>
+                                                    <Hidden only={["xs"]}>
+                                                        <TableCell style={{ padding: "5px 16px", textAlign: "center" }}>
+                                                            {{
+                                                                "CREATED": "Iniciado",
+                                                                "IN_PROGRESS": "Em progresso",
+                                                                "CONCLUDED": "Concluído",
+                                                                "WAITING_CUSTOMER": "Aguardando Cliente",
+                                                                "WAITING_INTERNAL": "Aguardando Pendência Interna",
+                                                                "WAITING_SCHEDULE": "Aguardando Retorno",
+                                                                "WAITING_OTHER": "Aguardando"
+                                                            }[prop.currentStatus]}
+                                                        </TableCell>
+                                                    </Hidden>
                                                     <Hidden only={["xs", "sm", "md"]}><TableCell style={{ padding: "5px 16px", textAlign: "center" }}><Moment date={prop.createdAt} format="DD/MM/YYYY" /></TableCell></Hidden>
                                                     <Hidden only={["xs", "sm"]}><TableCell style={{ padding: "5px 16px", textAlign: "center" }}>{prop.createdByName}</TableCell></Hidden>
                                                     <TableCell style={{ padding: "5px 16px", textAlign: "center" }}>

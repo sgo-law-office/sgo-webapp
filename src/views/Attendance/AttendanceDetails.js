@@ -3,7 +3,7 @@ import GridContainer from "components/Grid/GridContainer";
 import GridItem from "components/Grid/GridItem";
 import { withRouter } from "react-router-dom";
 import CustomInput from "components/CustomInput/CustomInput";
-import { Card, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Paper, Tab, Tabs, Tooltip } from "@material-ui/core";
+import { Card, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Hidden, Paper, Tab, Tabs, Tooltip } from "@material-ui/core";
 import CardBody from "components/Card/CardBody";
 
 import Button from "components/CustomButtons/Button";
@@ -193,19 +193,29 @@ class AttendanceDetails extends React.Component {
                                     <div>
                                         <GridContainer>
 
-                                            <GridItem sm={12} md={12} lg={6}>
+                                            <GridItem sm={12} md={12} lg={6} style={{marginBottom: "20px"}}>
                                                 <span>Atendimento ao cliente</span>
                                                 <Tooltip title="Detalhes do cliente" arrow>
                                                     <h2 style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", margin: "0 0 12px", cursor: "pointer" }}
                                                         onClick={e => this.props.history.push("/admin/customers/" + this.state.data.customerId)}>{this.state.data.customerName}</h2>
                                                 </Tooltip>
 
-                                                <small>Status </small>
-                                                <p style={{ color: "green", fontSize: "1.2em", margin: "0" }}>{this.state.data.status == "CREATED" ? "Iniciado" : ""}</p>
+                                                <span>Status </span>
+                                                <h4 style={{ color: "green", margin: "0" }}>
+                                                    {{
+                                                        "CREATED": "Iniciado",
+                                                        "IN_PROGRESS": "Em progresso",
+                                                        "CONCLUDED": "Concluído",
+                                                        "WAITING_CUSTOMER": "Aguardando Cliente",
+                                                        "WAITING_INTERNAL": "Aguardando Pendência Interna",
+                                                        "WAITING_SCHEDULE": "Aguardando Retorno",
+                                                        "WAITING_OTHER": "Aguardando"
+                                                    }[this.state.data.status]}
+                                                </h4>
 
                                             </GridItem>
 
-                                            <GridItem sm={4} md={4} lg={2}>
+                                            <GridItem xs={12} sm={4} md={4} lg={2} style={{ margin: "20px 0" }}>
                                                 <Paper elevation={2} style={{ height: "100%", padding: "15px 20px 5px 20px", textAlign: "right" }}>
                                                     <GridContainer>
 
@@ -250,7 +260,8 @@ class AttendanceDetails extends React.Component {
                                                 </Paper>
                                             </GridItem>
 
-                                            <GridItem sm={4} md={4} lg={2}>
+
+                                            <GridItem xs={12} sm={4} md={4} lg={2} style={{ margin: "20px 0" }}>
                                                 <Paper elevation={2} style={{ height: "100%", padding: "15px 20px 5px 20px", textAlign: "right" }}>
                                                     <GridContainer>
 
@@ -294,7 +305,8 @@ class AttendanceDetails extends React.Component {
                                                 </Paper>
                                             </GridItem>
 
-                                            <GridItem sm={4} md={4} lg={2}>
+
+                                            <GridItem xs={12} sm={4} md={4} lg={2} style={{ margin: "20px 0" }}>
                                                 <Paper elevation={2} style={{ height: "100%", padding: "15px 20px 5px 20px", textAlign: "right" }}>
                                                     <GridContainer>
 
@@ -345,38 +357,65 @@ class AttendanceDetails extends React.Component {
                                         <div style={{ marginTop: "45px", marginBottom: "45px" }}>
 
                                             <GridContainer>
-                                                <GridItem sm={12} md={6} lg={3}>
+                                                <GridItem xs={12} sm={6} md={6} lg={3}>
                                                     <CustomInput formControlProps={{ fullWidth: true }}>
-                                                        <p style={{ textAlign: "center" }}>Atendimento Iniciado em</p>
+                                                        
+                                                        <div style={{ textAlign: "right" }}>Criado em</div>
                                                     </CustomInput>
                                                 </GridItem>
 
-                                                <GridItem sm={12} md={6} lg={3}>
+                                                <GridItem xs={12} sm={6} md={6} lg={3}>
                                                     <CustomInput formControlProps={{ fullWidth: true }}>
-                                                        <p style={{ fontWeight: "bold" }}>
-                                                            <Moment date={this.state.data.createdAt} format="DD/MM/YYYY" />
-                                                        </p>
+                                                        <div style={{ fontWeight: "bold" }}>
+                                                            <Moment date={this.state.data.createdAt} format="DD [de] MMMM [de] YYYY" />
+                                                        </div>
                                                     </CustomInput>
                                                 </GridItem>
 
-                                                <GridItem sm={12} md={6} lg={3}>
+                                                <GridItem xs={12} sm={6} md={6} lg={3}>
                                                     <CustomInput formControlProps={{ fullWidth: true }}>
-                                                        <p style={{ textAlign: "center" }}>Atendimento Iniciado por</p>
+                                                        <div style={{ textAlign: "right" }}>Criado por</div>
                                                     </CustomInput>
                                                 </GridItem>
 
-                                                <GridItem sm={12} md={6} lg={3}>
+                                                <GridItem xs={12} sm={6} md={6} lg={3}>
                                                     <CustomInput formControlProps={{ fullWidth: true }}>
-                                                        <p style={{ fontWeight: "bold" }}>
+                                                        <div style={{ fontWeight: "bold" }}>
                                                             {this.state.data.createdByName}
-                                                        </p>
+                                                        </div>
                                                     </CustomInput>
                                                 </GridItem>
+
+                                                {this.state.data.lastUpdatedAt &&
+                                                    <GridItem xs={12} sm={6} md={6} lg={3}>
+                                                        <CustomInput formControlProps={{ fullWidth: true }}>
+                                                            <div style={{ textAlign: "right" }}>Ultima vez atualizado em</div>
+                                                        </CustomInput>
+                                                    </GridItem>}
+
+                                                {this.state.data.lastUpdatedAt && <GridItem xs={12} sm={6} md={6} lg={3}>
+                                                    <CustomInput formControlProps={{ fullWidth: true }}>
+                                                        <div style={{ fontWeight: "bold" }}>
+                                                            <Moment date={this.state.data.lastUpdatedAt} format="DD [de] MMMM [de] YYYY" />
+                                                        </div>
+                                                    </CustomInput>
+                                                </GridItem>}
+
+                                                {this.state.data.lastUpdatedAt && <GridItem xs={12} sm={6} md={6} lg={3}>
+                                                    <CustomInput formControlProps={{ fullWidth: true }}>
+                                                        <div style={{ textAlign: "right" }}>Ultima vez atualizado por</div>
+                                                    </CustomInput>
+                                                </GridItem>}
+
+                                                {this.state.data.lastUpdatedAt && <GridItem xs={12} sm={6} md={6} lg={3}>
+                                                    <CustomInput formControlProps={{ fullWidth: true }}>
+                                                        <div style={{ fontWeight: "bold" }}>
+                                                            {this.state.data.lastUpdatedByName}
+                                                        </div>
+                                                    </CustomInput>
+                                                </GridItem>}
 
                                             </GridContainer>
-
-
-
                                         </div>
 
 
@@ -390,7 +429,10 @@ class AttendanceDetails extends React.Component {
 
                                                 <div role="tabpanel" hidden={this.state.tabs.value !== 0}>
                                                     {!this.state.data.id && <h1 style={{ textAlign: "center" }}><img style={{ height: "100px" }} src="/load-small.gif" alt="Carregando..." /></h1>}
-                                                    {this.state.data.id && <AttendanceHistoryComponent attendanceId={this.state.data.id} loadCallback={data => this.setState({ tabs: { ...this.state.tabs, historyCount: data.total } })} />}
+                                                    {this.state.data.id && <AttendanceHistoryComponent
+                                                        attendanceId={this.state.data.id}
+                                                        loadCallback={data => this.setState({ tabs: { ...this.state.tabs, historyCount: data.total } })}
+                                                        statusChangeCallback={newStatus => this.setState({ data: { ...this.state.data, status: newStatus } })} />}
                                                 </div>
 
                                             </CardBody>

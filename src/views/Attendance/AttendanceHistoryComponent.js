@@ -165,6 +165,10 @@ class AttendanceDetails extends React.Component {
                             }
                         });
                         this.loadAttendanceHistory();
+
+                        if (this.props.statusChangeCallback && this.state.add.data.type === "STATUS_CHANGE") {
+                            this.props.statusChangeCallback(res.data.value);
+                        }
                     } else {
                         this.setState({
                             notification: {
