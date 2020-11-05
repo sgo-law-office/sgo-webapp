@@ -27,6 +27,7 @@ import Notification from "components/Notifications/Notification";
 import Modal from "components/Modal/Modal";
 
 import queryString from 'query-string';
+import AddressComponent from "./AddressComponent";
 
 
 const axios = Axios.create();
@@ -827,146 +828,21 @@ class CustomerDetails extends React.Component {
                     <Card style={{ marginTop: "30px", marginBottom: "30px", padding: "0 15px 20px 15px" }}>
                       <CardBody>
 
-                        <h3><small>Endereço</small></h3>
-                        <GridContainer>
-                          <GridItem xs={6} sm={6} md={4} lg={2}>
-                            <CustomInput id="address-cep" labelText="CEP" style={{ width: "100%" }}
-                              success={this.state.cepSearched && this.state.validCepInput}
-                              error={this.state.cepSearched && !this.state.validCepInput}
-                              formControlProps={{ fullWidth: false, style: { width: "100%" } }}
-                              inputProps={{
-                                disabled: !this.state.editing,
-                                value: this.state.cepText || this.state.data.address.zipCode,
-                                onChange: this.changeCep.bind(this),
-                                onKeyPress: this.cepInputKeyPress.bind(this),
-                              }} />
-                          </GridItem>
-                          <GridItem xs={6} sm={3} md={2} lg={1}>
-                            {this.state.editing &&
-                              <CustomInput>
-                                <Button color="primary"
-                                  disabled={!this.state.editing || this.state.cepText.length !== 9}
-                                  onClick={this.fetchCep.bind(this)}><SearchIcon /> Buscar</Button>
-                              </CustomInput>}
-                          </GridItem>
-
-                        </GridContainer>
-
-                        <GridContainer>
-
-                          <GridItem xs={12} sm={12} md={6} lg={6}>
-                            <CustomInput id="streetName" labelText="Rua"
-                              formControlProps={{ fullWidth: true }}
-                              inputProps={{
-                                disabled: !this.state.editing,
-                                value: this.state.data.address.streetName,
-                                onChange: (e) => this.setState({
-                                  data: {
-                                    ...this.state.data,
-                                    address: {
-                                      ...this.state.data.address,
-                                      streetName: e.target.value
-                                    }
-                                  }
-                                })
-                              }} />
-                          </GridItem>
-
-                          <GridItem xs={6} sm={6} md={3} lg={3}>
-                            <CustomInput id="streetNumber" labelText="Número"
-                              formControlProps={{ fullWidth: true }}
-                              inputProps={{
-                                disabled: !this.state.editing,
-                                value: this.state.data.address.streetNumber,
-                                onChange: (e) => this.setState({
-                                  data: {
-                                    ...this.state.data,
-                                    address: {
-                                      ...this.state.data.address,
-                                      streetNumber: e.target.value
-                                    }
-                                  }
-                                })
-                              }} />
-                          </GridItem>
-
-                          <GridItem xs={6} sm={6} md={3} lg={3}>
-                            <CustomInput id="streetNumberComplement" labelText="Complemento"
-                              formControlProps={{ fullWidth: true }}
-                              inputProps={{
-                                disabled: !this.state.editing,
-                                value: this.state.data.address.streetNumberComplement,
-                                onChange: (e) => this.setState({
-                                  data: {
-                                    ...this.state.data,
-                                    address: {
-                                      ...this.state.data.address,
-                                      streetNumberComplement: e.target.value
-                                    }
-                                  }
-                                })
-                              }} />
-                          </GridItem>
-
-                          <GridItem xs={12} sm={12} md={5} lg={5}>
-                            <CustomInput id="neighborhood" labelText="Bairro"
-                              formControlProps={{ fullWidth: true }}
-                              inputProps={{
-                                disabled: !this.state.editing,
-                                value: this.state.data.address.neighborhood,
-                                onChange: (e) => this.setState({
-                                  data: {
-                                    ...this.state.data,
-                                    address: {
-                                      ...this.state.data.address,
-                                      neighborhood: e.target.value
-                                    }
-                                  }
-                                })
-                              }} />
-                          </GridItem>
-
-                          <GridItem xs={9} sm={8} md={5} lg={5}>
-                            <CustomInput id="city" labelText="Cidade"
-                              formControlProps={{ fullWidth: true }}
-                              inputProps={{
-                                disabled: !this.state.editing,
-                                value: this.state.data.address.city,
-                                onChange: (e) => this.setState({
-                                  data: {
-                                    ...this.state.data,
-                                    address: {
-                                      ...this.state.data.address,
-                                      city: e.target.value
-                                    }
-                                  }
-                                })
-                              }} />
-                          </GridItem>
-
-                          <GridItem xs={3} sm={4} md={2} lg={2}>
-                            <CustomInput id="state" labelText="Estado" select={true}
-                              formControlProps={{ fullWidth: true }}
-                              labelProps={{ shrink: true }}
-                              inputProps={{
-                                disabled: !this.state.editing,
-                                value: this.state.data.address.state,
-                                onChange: (e) => this.setState({
-                                  data: {
-                                    ...this.state.data,
-                                    address: {
-                                      ...this.state.data.address,
-                                      state: e.target.value
-                                    }
-                                  }
-                                })
-                              }}>
-                              {this.props.common.data.states.map((e, i) => {
-                                return (<option value={e} key={i}>{e}</option>)
-                              })}
-                            </CustomInput>
-                          </GridItem>
-                        </GridContainer>
+                        <h3><small>Endereços</small></h3>
+                        {this.state.data && <AddressComponent
+                          editing={this.state.editing}
+                          creating={this.state.editing}
+                          data={this.state.data}
+                          onChange={(changed) => this.setState({
+                            data: {
+                              ...this.state.data,
+                              address: {
+                                ...this.state.data.address,
+                                ...changed
+                              }
+                            }
+                          })}
+                        />}
                       </CardBody>
                     </Card>
 

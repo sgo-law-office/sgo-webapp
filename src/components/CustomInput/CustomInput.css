@@ -1,0 +1,4 @@
+input[disabled],
+select[disabled] {
+    color: rgba(0, 0, 0, 0.7);
+}

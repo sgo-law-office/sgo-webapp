@@ -13,6 +13,8 @@ import Check from "@material-ui/icons/Check";
 import styles from "assets/jss/material-dashboard-react/components/customInputStyle.js";
 import { NativeSelect } from "@material-ui/core";
 
+import "./CustomInput.css";
+
 const useStyles = makeStyles(styles);
 
 export default function CustomInput(props) {
