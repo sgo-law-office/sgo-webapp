@@ -31,6 +31,7 @@ import AttendanceCreate from "./AttendanceCreate";
 
 import Axios from "axios";
 import { Gavel } from "@material-ui/icons";
+import ElderTooltip from "components/ElderTooltip/ElderTooltip";
 const axios = Axios.create();
 axios.interceptors.request.use(authRequestInterceptor, authRequestInterceptorOnError);
 axios.interceptors.response.use(authResponseInterceptor, authResponseInterceptorOnError);
@@ -192,164 +193,184 @@ class AttendanceDetails extends React.Component {
                                 {!this.state.creating &&
                                     <div>
                                         <GridContainer>
+                                            <GridItem xs={12} sm={12} md={6}>
+                                                <GridContainer>
 
-                                            <GridItem sm={12} md={12} lg={6} style={{marginBottom: "20px"}}>
-                                                <span>Atendimento ao cliente</span>
-                                                <Tooltip title="Detalhes do cliente" arrow>
-                                                    <h2 style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", margin: "0 0 12px", cursor: "pointer" }}
-                                                        onClick={e => this.props.history.push("/admin/customers/" + this.state.data.customerId)}>{this.state.data.customerName}</h2>
-                                                </Tooltip>
+                                                    <GridItem xs={12}>
+                                                        <span>Atendimento ao cliente</span>
 
-                                                <span>Status </span>
-                                                <h4 style={{ color: "green", margin: "0" }}>
-                                                    {{
-                                                        "CREATED": "Iniciado",
-                                                        "IN_PROGRESS": "Em progresso",
-                                                        "CONCLUDED": "Concluído",
-                                                        "WAITING_CUSTOMER": "Aguardando Cliente",
-                                                        "WAITING_INTERNAL": "Aguardando Pendência Interna",
-                                                        "WAITING_SCHEDULE": "Aguardando Retorno",
-                                                        "WAITING_OTHER": "Aguardando"
-                                                    }[this.state.data.status]}
-                                                </h4>
+                                                        <div style={{ cursor: "pointer", marginBottom: "20px" }}>
+                                                            <Tooltip title="Detalhes do cliente" arrow>
+                                                                <span style={{ verticalAlign: "middle" }}>
+                                                                    <span style={{ fontSize: "3em", lineHeight: "1.4em" }}
+                                                                        onClick={e => this.props.history.push("/admin/customers/" + this.state.data.customerId)}>
+                                                                        {this.state.data.customerName}
+                                                                    </span>
 
+                                                                    <ElderTooltip birthDate={this.state.data.customerBirthDate} />
+                                                                </span>
+                                                            </Tooltip>
+                                                        </div>
+
+                                                        <span>Status </span>
+                                                        <h4 style={{ color: "green", margin: "0" }}>
+                                                            {{
+                                                                "CREATED": "Iniciado",
+                                                                "IN_PROGRESS": "Em progresso",
+                                                                "CONCLUDED": "Concluído",
+                                                                "WAITING_CUSTOMER": "Aguardando Cliente",
+                                                                "WAITING_INTERNAL": "Aguardando Pendência Interna",
+                                                                "WAITING_SCHEDULE": "Aguardando Retorno",
+                                                                "WAITING_OTHER": "Aguardando"
+                                                            }[this.state.data.status]}
+                                                        </h4>
+
+                                                    </GridItem>
+                                                </GridContainer>
                                             </GridItem>
 
-                                            <GridItem xs={12} sm={4} md={4} lg={2} style={{ margin: "20px 0" }}>
-                                                <Paper elevation={2} style={{ height: "100%", padding: "15px 20px 5px 20px", textAlign: "right" }}>
-                                                    <GridContainer>
+                                            <GridItem xs={12} sm={12} md={6}>
 
+                                                <GridContainer>
 
-                                                        <GridItem sm={6} style={{ textAlign: "center" }}>
-
+                                                    <GridItem xs={12} sm={4} md={4} lg={4} style={{ margin: "20px 0" }}>
+                                                        <Paper elevation={2} style={{ height: "100%", padding: "15px 20px 5px 20px", textAlign: "right" }}>
                                                             <GridContainer>
-                                                                <GridItem sm={12}>
-                                                                    <span style={{ fontSize: "72px", lineHeight: "72px", color: "#5a5a5a" }}>
-                                                                        {this.state.data.schedulesSummary ? this.state.data.schedulesSummary.open : <img style={{ height: "60px" }} src="/load-small.gif" alt="Carregando..." />}
-                                                                    </span>
-                                                                </GridItem>
-                                                                <GridItem sm={12}>
-                                                                    <small>Retornos Agendados</small>
-                                                                </GridItem>
-                                                            </GridContainer>
-
-                                                        </GridItem>
 
 
-                                                        <GridItem sm={6}>
-                                                            <GridContainer>
-                                                                <GridItem sm={12}>
-                                                                    <Tooltip title="Ver Agendamentos" arrow>
-                                                                        <a href="#" onClick={e => this.props.history.push('/admin/contracts')}>
-                                                                            <ScheduleIcon fontSize="large" />
-                                                                        </a>
-                                                                    </Tooltip>
+                                                                <GridItem sm={6} style={{ textAlign: "center" }}>
+
+                                                                    <GridContainer>
+                                                                        <GridItem sm={12}>
+                                                                            <span style={{ fontSize: "72px", lineHeight: "72px", color: "#5a5a5a" }}>
+                                                                                {this.state.data.schedulesSummary ? this.state.data.schedulesSummary.open : <img style={{ height: "60px" }} src="/load-small.gif" alt="Carregando..." />}
+                                                                            </span>
+                                                                        </GridItem>
+                                                                        <GridItem sm={12}>
+                                                                            <small>Retornos Agendados</small>
+                                                                        </GridItem>
+                                                                    </GridContainer>
 
                                                                 </GridItem>
-                                                                <GridItem sm={12} style={{ marginTop: "10px" }}>
-                                                                    <span style={{ whiteSpace: "nowrap" }}>
-                                                                        <span style={{ fontWeight: "bold" }}>
-                                                                            {this.state.data.schedulesSummary ? this.state.data.schedulesSummary.total : <img style={{ height: "17px" }} src="/load-small.gif" alt="Carregando..." />}
-                                                                        </span>
+
+
+                                                                <GridItem sm={6}>
+                                                                    <GridContainer>
+                                                                        <GridItem sm={12}>
+                                                                            <Tooltip title="Ver Agendamentos" arrow>
+                                                                                <a href="#" onClick={e => this.props.history.push('/admin/contracts')}>
+                                                                                    <ScheduleIcon fontSize="large" />
+                                                                                </a>
+                                                                            </Tooltip>
+
+                                                                        </GridItem>
+                                                                        <GridItem sm={12} style={{ marginTop: "10px" }}>
+                                                                            <span style={{ whiteSpace: "nowrap" }}>
+                                                                                <span style={{ fontWeight: "bold" }}>
+                                                                                    {this.state.data.schedulesSummary ? this.state.data.schedulesSummary.total : <img style={{ height: "17px" }} src="/load-small.gif" alt="Carregando..." />}
+                                                                                </span>
                                                                             &nbsp;total</span>
-                                                                </GridItem>
-                                                            </GridContainer>
-                                                        </GridItem>
-                                                    </GridContainer>
-
-                                                </Paper>
-                                            </GridItem>
-
-
-                                            <GridItem xs={12} sm={4} md={4} lg={2} style={{ margin: "20px 0" }}>
-                                                <Paper elevation={2} style={{ height: "100%", padding: "15px 20px 5px 20px", textAlign: "right" }}>
-                                                    <GridContainer>
-
-                                                        <GridItem sm={6} style={{ textAlign: "center" }}>
-
-                                                            <GridContainer>
-                                                                <GridItem sm={12}>
-                                                                    <span style={{ fontSize: "72px", lineHeight: "72px", color: "#5a5a5a" }}>
-                                                                        {this.state.data.contractsSummary ? this.state.data.contractsSummary.open : <img style={{ height: "60px" }} src="/load-small.gif" alt="Carregando..." />}
-                                                                    </span>
-                                                                </GridItem>
-                                                                <GridItem sm={12}>
-                                                                    <small>Contratos Abertos</small>
+                                                                        </GridItem>
+                                                                    </GridContainer>
                                                                 </GridItem>
                                                             </GridContainer>
 
+                                                        </Paper>
+                                                    </GridItem>
 
-                                                        </GridItem>
 
-
-                                                        <GridItem sm={6}>
+                                                    <GridItem xs={12} sm={4} md={4} lg={4} style={{ margin: "20px 0" }}>
+                                                        <Paper elevation={2} style={{ height: "100%", padding: "15px 20px 5px 20px", textAlign: "right" }}>
                                                             <GridContainer>
-                                                                <GridItem sm={12}>
-                                                                    <Tooltip title="Ver Contratos" arrow>
-                                                                        <a href="#" onClick={e => this.props.history.push('/admin/contracts')}>
-                                                                            <DescriptionIcon fontSize="large" />
-                                                                        </a>
-                                                                    </Tooltip>
+
+                                                                <GridItem sm={6} style={{ textAlign: "center" }}>
+
+                                                                    <GridContainer>
+                                                                        <GridItem sm={12}>
+                                                                            <span style={{ fontSize: "72px", lineHeight: "72px", color: "#5a5a5a" }}>
+                                                                                {this.state.data.contractsSummary ? this.state.data.contractsSummary.open : <img style={{ height: "60px" }} src="/load-small.gif" alt="Carregando..." />}
+                                                                            </span>
+                                                                        </GridItem>
+                                                                        <GridItem sm={12}>
+                                                                            <small>Contratos Abertos</small>
+                                                                        </GridItem>
+                                                                    </GridContainer>
+
+
                                                                 </GridItem>
-                                                                <GridItem sm={12} style={{ marginTop: "10px" }}>
-                                                                    <span style={{ whiteSpace: "nowrap" }}>
-                                                                        <span style={{ fontWeight: "bold" }}>
-                                                                            {this.state.data.contractsSummary ? this.state.data.contractsSummary.total : <img style={{ height: "17px" }} src="/load-small.gif" alt="Carregando..." />}
-                                                                        </span>
+
+
+                                                                <GridItem sm={6}>
+                                                                    <GridContainer>
+                                                                        <GridItem sm={12}>
+                                                                            <Tooltip title="Ver Contratos" arrow>
+                                                                                <a href="#" onClick={e => this.props.history.push('/admin/contracts')}>
+                                                                                    <DescriptionIcon fontSize="large" />
+                                                                                </a>
+                                                                            </Tooltip>
+                                                                        </GridItem>
+                                                                        <GridItem sm={12} style={{ marginTop: "10px" }}>
+                                                                            <span style={{ whiteSpace: "nowrap" }}>
+                                                                                <span style={{ fontWeight: "bold" }}>
+                                                                                    {this.state.data.contractsSummary ? this.state.data.contractsSummary.total : <img style={{ height: "17px" }} src="/load-small.gif" alt="Carregando..." />}
+                                                                                </span>
                                                                         &nbsp;total</span>
-                                                                </GridItem>
-                                                            </GridContainer>
-                                                        </GridItem>
-                                                    </GridContainer>
-
-                                                </Paper>
-                                            </GridItem>
-
-
-                                            <GridItem xs={12} sm={4} md={4} lg={2} style={{ margin: "20px 0" }}>
-                                                <Paper elevation={2} style={{ height: "100%", padding: "15px 20px 5px 20px", textAlign: "right" }}>
-                                                    <GridContainer>
-
-
-                                                        <GridItem sm={6} style={{ textAlign: "center" }}>
-
-                                                            <GridContainer>
-                                                                <GridItem sm={12}>
-                                                                    <span style={{ fontSize: "72px", lineHeight: "72px", color: "#5a5a5a" }}>
-                                                                        {this.state.data.paymentsSummary ? this.state.data.paymentsSummary.open : <img style={{ height: "60px" }} src="/load-small.gif" alt="Carregando..." />}
-                                                                    </span>
-                                                                </GridItem>
-                                                                <GridItem sm={12}>
-                                                                    <small>Processos Pendentes</small>
+                                                                        </GridItem>
+                                                                    </GridContainer>
                                                                 </GridItem>
                                                             </GridContainer>
 
+                                                        </Paper>
+                                                    </GridItem>
 
-                                                        </GridItem>
 
-
-                                                        <GridItem sm={6}>
+                                                    <GridItem xs={12} sm={4} md={4} lg={4} style={{ margin: "20px 0" }}>
+                                                        <Paper elevation={2} style={{ height: "100%", padding: "15px 20px 5px 20px", textAlign: "right" }}>
                                                             <GridContainer>
-                                                                <GridItem sm={12}>
-                                                                    <Tooltip title="Ver Pagamentos" arrow>
-                                                                        <a href="#" onClick={e => this.props.history.push('/admin/processes')}>
-                                                                            <Gavel fontSize="large" />
-                                                                        </a>
-                                                                    </Tooltip>
+
+
+                                                                <GridItem sm={6} style={{ textAlign: "center" }}>
+
+                                                                    <GridContainer>
+                                                                        <GridItem sm={12}>
+                                                                            <span style={{ fontSize: "72px", lineHeight: "72px", color: "#5a5a5a" }}>
+                                                                                {this.state.data.paymentsSummary ? this.state.data.paymentsSummary.open : <img style={{ height: "60px" }} src="/load-small.gif" alt="Carregando..." />}
+                                                                            </span>
+                                                                        </GridItem>
+                                                                        <GridItem sm={12}>
+                                                                            <small>Processos Pendentes</small>
+                                                                        </GridItem>
+                                                                    </GridContainer>
+
 
                                                                 </GridItem>
-                                                                <GridItem sm={12} style={{ marginTop: "10px" }}>
-                                                                    <span style={{ whiteSpace: "nowrap" }}>
-                                                                        <span style={{ fontWeight: "bold" }}>
-                                                                            {this.state.data.paymentsSummary ? this.state.data.paymentsSummary.total : <img style={{ height: "17px" }} src="/load-small.gif" alt="Carregando..." />}
-                                                                        </span>
+
+
+                                                                <GridItem sm={6}>
+                                                                    <GridContainer>
+                                                                        <GridItem sm={12}>
+                                                                            <Tooltip title="Ver Pagamentos" arrow>
+                                                                                <a href="#" onClick={e => this.props.history.push('/admin/processes')}>
+                                                                                    <Gavel fontSize="large" />
+                                                                                </a>
+                                                                            </Tooltip>
+
+                                                                        </GridItem>
+                                                                        <GridItem sm={12} style={{ marginTop: "10px" }}>
+                                                                            <span style={{ whiteSpace: "nowrap" }}>
+                                                                                <span style={{ fontWeight: "bold" }}>
+                                                                                    {this.state.data.paymentsSummary ? this.state.data.paymentsSummary.total : <img style={{ height: "17px" }} src="/load-small.gif" alt="Carregando..." />}
+                                                                                </span>
                                                                             &nbsp;total</span>
+                                                                        </GridItem>
+                                                                    </GridContainer>
                                                                 </GridItem>
                                                             </GridContainer>
-                                                        </GridItem>
-                                                    </GridContainer>
 
-                                                </Paper>
+                                                        </Paper>
+                                                    </GridItem>
+
+                                                </GridContainer>
                                             </GridItem>
 
                                         </GridContainer>
@@ -359,7 +380,7 @@ class AttendanceDetails extends React.Component {
                                             <GridContainer>
                                                 <GridItem xs={12} sm={6} md={6} lg={3}>
                                                     <CustomInput formControlProps={{ fullWidth: true }}>
-                                                        
+
                                                         <div style={{ textAlign: "right" }}>Criado em</div>
                                                     </CustomInput>
                                                 </GridItem>
@@ -438,12 +459,11 @@ class AttendanceDetails extends React.Component {
                                             </CardBody>
                                         </Card>
 
-
                                     </div>}
 
 
                                 {!this.state.creating && !this.state.editing && <div>
-                                    <Button onClick={e => this.props.history.goBack()}>Voltar</Button>
+                                    <Button onClick={e => this.props.history.push("/admin/attendances")}>Voltar</Button>
                                 </div>}
 
 

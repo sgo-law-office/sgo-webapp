@@ -26,6 +26,7 @@ import {
 } from "components/Loading/interceptor";
 
 import CheckIcon from '@material-ui/icons/Check';
+import ElderTooltip from "components/ElderTooltip/ElderTooltip";
 
 const axios = Axios.create();
 axios.interceptors.request.use(authRequestInterceptor, authRequestInterceptorOnError);
@@ -325,7 +326,7 @@ class AttendanceDetails extends React.Component {
                                     {this.state.customerSearch.data && this.state.customerSearch.data.customers && this.state.customerSearch.data.customers.length > 0 && this.state.customerSearch.data.customers.map((prop, key) => {
                                         return (
                                             <TableRow key={key}>
-                                                <TableCell style={{ padding: "5px 16px", width: "70%" }}>{prop.name}</TableCell>
+                                                <TableCell style={{ padding: "5px 16px", width: "70%" }}>{prop.name} <ElderTooltip birthDate={prop.birthDate} /></TableCell>
                                                 <TableCell style={{ padding: "5px 16px", textAlign: "center" }}>{prop.code}</TableCell>
                                                 <TableCell style={{ textAlign: "center" }}>
                                                     <Tooltip title="Selecionar" arrow>

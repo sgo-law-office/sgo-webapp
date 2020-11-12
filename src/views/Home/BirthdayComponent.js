@@ -13,6 +13,7 @@ import { authRequestInterceptor, authRequestInterceptorOnError, authResponseInte
 import { loadingRequestInterceptor, loadingRequestInterceptorOnError, loadingResponseInterceptor, loadingResponseInterceptorOnError } from "components/Loading/interceptor";
 import Axios from "axios";
 import { connect } from "react-redux";
+import ElderTooltip from "components/ElderTooltip/ElderTooltip";
 
 
 const axios = Axios.create();
@@ -111,7 +112,7 @@ class BirthdayComponent extends React.Component {
                                 {this.state.birthdays.data.data.map((e, i) => {
                                     return (
                                         <TableRow key={i}>
-                                            <TableCell style={{ width: "70%" }}><a href={"/admin/customers/" + e.id} onClick={ev => { ev.preventDefault(); this.props.history.push("/admin/customers/" + e.id) }}>{e.name}</a></TableCell>
+                                            <TableCell style={{ width: "70%" }}><a href={"/admin/customers/" + e.id} onClick={ev => { ev.preventDefault(); this.props.history.push("/admin/customers/" + e.id) }}>{e.name} <ElderTooltip birthDate={e.birthDate} /></a></TableCell>
                                             <TableCell style={{ textAlign: "center" }}>
                                                 <Tooltip title={moment(e.birthDate).format("DD [de] MMMM")} arrow>
                                                     <div>

@@ -3,14 +3,14 @@ import GridContainer from "components/Grid/GridContainer";
 import GridItem from "components/Grid/GridItem";
 import { withRouter } from "react-router-dom";
 import CustomInput from "components/CustomInput/CustomInput";
-import { AppBar, Card, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Hidden, IconButton, NativeSelect, Tab, Tabs, Tooltip } from "@material-ui/core";
-import CardHeader from "components/Card/CardHeader";
+import { Card, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Hidden, IconButton, Tab, Table, TableBody, TableCell, TableHead, TableRow, Tabs, Tooltip } from "@material-ui/core";
+
 import CardBody from "components/Card/CardBody";
-import CardFooter from "components/Card/CardFooter";
+
 import Button from "components/CustomButtons/Button";
 import { connect } from "react-redux";
 import CompanySelect from "components/CompanySelect/CompanySelect";
-import SearchIcon from '@material-ui/icons/Search';
+
 import Axios from "axios";
 import {
   authRequestInterceptor, authRequestInterceptorOnError,
@@ -22,12 +22,14 @@ import { loadingResponseInterceptor } from "components/Loading/interceptor";
 import { loadingResponseInterceptorOnError } from "components/Loading/interceptor";
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
+import PersonOutlineIcon from '@material-ui/icons/PersonOutline';
+
 
 import Notification from "components/Notifications/Notification";
-import Modal from "components/Modal/Modal";
 
 import queryString from 'query-string';
 import AddressComponent from "./AddressComponent";
+import ElderTooltip from "components/ElderTooltip/ElderTooltip";
 
 
 const axios = Axios.create();
@@ -36,8 +38,6 @@ axios.interceptors.response.use(authResponseInterceptor, authResponseInterceptor
 
 axios.interceptors.request.use(loadingRequestInterceptor, loadingRequestInterceptorOnError);
 axios.interceptors.response.use(loadingResponseInterceptor, loadingResponseInterceptorOnError);
-
-
 
 
 class CustomerDetails extends React.Component {
@@ -53,11 +53,6 @@ class CustomerDetails extends React.Component {
       tabs: {
         value: 0
       },
-
-      cepText: "",
-      cepSearched: false,
-      validCepInput: false,
-      addressFromCep: this.getInitialAddressFromCepState(),
 
       data: this.getInitialDataState(),
 
@@ -89,7 +84,6 @@ class CustomerDetails extends React.Component {
   getInitialDataState() {
     return {
       id: null,
-      code: "O código será gerado após a criação do cliente",
       active: null,
       companyId: null,
       name: "",
@@ -97,7 +91,7 @@ class CustomerDetails extends React.Component {
       birthDate: "",
       taxPayerIdentifier: "",
       idCard: "",
-      address: this.getInitialDataAddressState(),
+      addresses: [],
       phones: [{
         type: "MOBILE",
         value: "",
@@ -109,28 +103,6 @@ class CustomerDetails extends React.Component {
         NOTES: ""
       }
     }
-  }
-
-  getInitialDataAddressState() {
-    return {
-      zipCode: "",
-      streetName: "",
-      streetNumber: "",
-      streetNumberComplement: "",
-      neighborhood: "",
-      city: "",
-      state: "SP",
-    }
-  }
-
-  getInitialAddressFromCepState() {
-    return {
-      streetName: "",
-      neighborhood: "",
-      city: "",
-      state: "",
-      zipCode: ""
-    };
   }
 
   componentDidMount() {
@@ -166,86 +138,6 @@ class CustomerDetails extends React.Component {
     this.setState({
       companyId: e.target.value
     })
-  }
-
-  cepInputKeyPress(e) {
-    if (e.key === 'Enter') {
-      this.fetchCep();
-    }
-  }
-
-  fetchCep() {
-    if (this.state.cepText.length === 9) {
-      axios.get('/api/cep?cep=' + this.state.cepText.replace(/^\D+/g, ''), {
-        headers: {
-          "Accept": "application/json"
-        }
-      })
-        .then(res => {
-          if (res.status == 200) {
-            const { data } = res;
-            if (data.state) {
-              this.setState({
-                cepSearched: true,
-                validCepInput: true,
-                addressFromCep: data,
-                data: {
-                  ...this.state.data,
-                  address: {
-                    ...this.state.address,
-                    zipCode: data.zipCode,
-                    streetName: data.streetName,
-                    neighborhood: data.neighborhood,
-                    city: data.city,
-                    state: data.state
-                  }
-
-                }
-              });
-            } else {
-              this.setState({
-                cepSearched: true,
-                validCepInput: false,
-                addressFromCep: this.getInitialAddressFromCepState(),
-                data: {
-                  ...this.state.data,
-                  address: this.getInitialDataAddressState()
-                }
-              })
-            }
-          } else {
-            this.setState({
-              validCepInput: false,
-              cepSearched: true,
-              addressFromCep: this.getInitialAddressFromCepState(),
-              data: {
-                ...this.state.data,
-                address: this.getInitialDataAddressState()
-              }
-            })
-          }
-        })
-        .catch(err => {
-          this.setState({
-            validCepInput: false,
-            addressFromCep: this.getInitialAddressFromCepState(),
-            data: {
-              ...this.state.data,
-              address: this.getInitialDataAddressState()
-            }
-          })
-        })
-    }
-  }
-
-  changeCep(e) {
-    var sanitizedValue = e.target.value.substring(0, 9).replace(/^(\d{5})(\d).*/, '$1-$2');
-    this.setState({
-      cepSearched: false,
-      validCepInput: false,
-      addressFromCep: this.getInitialAddressFromCepState(),
-      cepText: sanitizedValue
-    });
   }
 
   loadUser(force) {
@@ -317,16 +209,19 @@ class CustomerDetails extends React.Component {
 
   }
 
-  createUser() {
+  createUser(skipDuplicated) {
     if (this.isValidToCreate(this.state.data)) {
 
-      axios.post("/api/customers", this.state.data, {
+      const payload = this.state.data;
+      payload.addresses = payload.addresses.filter((a) => a.streetName.trim().length > 0);
+
+      axios.post("/api/customers" + (skipDuplicated ? "?skipDuplicated=true" : ""), this.state.data, {
         headers: {
           'Content-Type': 'application/json'
         }
       })
         .then(res => {
-          if (res.status == 201) {
+          if (res.status === 201) {
             this.setState({
               creating: false,
               editing: false,
@@ -345,14 +240,90 @@ class CustomerDetails extends React.Component {
           }
         })
         .catch(err => {
-          this.setState({
-            notification: {
-              ...this.state.notification,
-              display: true,
-              severity: "danger",
-              message: "Falha ao criar cliente, tente novamente."
-            }
-          });
+          if (err.response && err.response.status === 400 && err.response.data.actionMnemonic && err.response.data.actionMnemonic === "DUPLICATED_CUSTOMER") {
+
+            this.setState({
+              dialog: {
+                title: "Possível duplicidade de cliente encontrada",
+                display: true,
+                fullWidth: true,
+                maxWidth: "lg",
+                message: (<div>
+                  <span>Foram encontrados clientes com dados pessoais iguais ao que está sendo cadastrado.</span>
+                  <p>Confirme os dados e caso queira prosseguir sabendo da possível duplicidade, clique em "Estou ciente e quero continuar".</p>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell style={{ textAlign: "center", width: "35%" }}>Nome</TableCell>
+                        <TableCell style={{ textAlign: "center", width: "10%" }}>E-mail</TableCell>
+                        <TableCell style={{ textAlign: "center", width: "15%" }}>CPF</TableCell>
+                        <TableCell style={{ textAlign: "center", width: "15%" }}>RG</TableCell>
+                        <TableCell style={{ textAlign: "center", width: "25%" }}>Unidade</TableCell>
+                        <TableCell></TableCell>
+                      </TableRow>
+                    </TableHead>
+
+                    <TableBody>
+                      {err.response.data.data.data.map((prop, key) => {
+                        return (
+                          <TableRow key={key}>
+                            <TableCell>{prop.name}</TableCell>
+                            <TableCell>{prop.mail}</TableCell>
+                            <TableCell>{prop.taxPayerIdentifier}</TableCell>
+                            <TableCell>{prop.idCard}</TableCell>
+                            <TableCell>{(this.props.companies.filter(e => e.id === prop.companyId)[0] || {}).name || ""}</TableCell>
+                            <TableCell style={{ textAlign: "center" }}>
+                              <Tooltip title="Detalhes" arrow>
+                                <span>
+                                  <Button justIcon round color="transparent"
+                                    onClick={e => this.props.history.push("/admin/customers/" + prop.id)}>
+                                    <PersonOutlineIcon />
+                                  </Button>
+                                </span>
+                              </Tooltip>
+
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>),
+                actions: [
+                  {
+                    text: "Cancelar",
+                    color: "transparent",
+                    autoFocus: true,
+                    callback: () => {
+                      this.setState({
+                        dialog: {
+                          ...this.state.dialog,
+                          display: false
+                        }
+                      })
+                    }
+                  },
+                  {
+                    text: "Estou ciente e quero continuar",
+                    color: "danger",
+                    callback: () => {
+                      this.createUser(true);
+                    }
+                  }
+                ]
+              }
+            })
+
+          } else {
+            this.setState({
+              notification: {
+                ...this.state.notification,
+                display: true,
+                severity: "danger",
+                message: "Falha ao criar cliente, tente novamente."
+              }
+            });
+          }
         });
 
     }
@@ -360,7 +331,9 @@ class CustomerDetails extends React.Component {
 
   editUser() {
     if (this.isValidToEdit(this.state.data)) {
-      axios.put("/api/customers/" + this.state.idFromUrl, this.state.data, {
+      const payload = this.state.data;
+      payload.addresses = payload.addresses.filter((a) => a.streetName.trim().length > 0);
+      axios.put("/api/customers/" + this.state.idFromUrl, payload, {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -485,14 +458,13 @@ class CustomerDetails extends React.Component {
         />
 
         <Dialog
+          fullWidth={this.state.dialog.fullWidth}
+          maxWidth={this.state.dialog.maxWidth}
           open={this.state.dialog.display}
-          onClose={() => { this.setState({ dialog: { ...this.state.dialog, display: false } }) }}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogTitle id="alert-dialog-title">{this.state.dialog.title}</DialogTitle>
+          onClose={() => { this.setState({ dialog: { ...this.state.dialog, display: false } }) }}>
+          <DialogTitle >{this.state.dialog.title}</DialogTitle>
           <DialogContent>
-            <DialogContentText id="alert-dialog-description">
+            <DialogContentText>
               {this.state.dialog.message}
             </DialogContentText>
           </DialogContent>
@@ -522,23 +494,12 @@ class CustomerDetails extends React.Component {
           <GridContainer>
             <GridItem xs={12} sm={12} style={{ textAlign: "center", marginTop: "50px" }}>
               <h2>Não foi possível encontrar o cliente</h2>
-              <Button color="transparent" onClick={e => this.props.history.goBack()}>Voltar</Button>
+              <Button color="transparent" onClick={e => this.props.history.push("/admin/customers")}>Voltar</Button>
             </GridItem>
           </GridContainer>}
 
         {!this.state.notFound &&
           <div>
-            {this.state.data.active !== null &&
-              <p style={{ textAlign: "right", fontSize: "1.5em" }}>
-                {this.state.data.active && <div>
-                  <p style={{ color: "green" }}><small style={{ color: "grey" }}>Status&nbsp;&nbsp;</small> Ativo</p>
-                </div>}
-                {!this.state.data.active && <div>
-                  <p style={{ color: "red" }}><small style={{ color: "grey" }}>Status&nbsp;&nbsp;</small> Desativado</p>
-                </div>}
-              </p>}
-
-
             <Tabs value={this.state.tabs.value} onChange={(e, v) => this.setState({ tabs: { ...this.state.tabs, value: v } })}>
               <Tab label="Dados pessoais" />
               <Tab label="Outros" />
@@ -558,21 +519,25 @@ class CustomerDetails extends React.Component {
                         <GridContainer>
 
                           <GridItem xs={12} sm={12} md={6}>
-                            <CustomInput id="code" labelText="Código"
-                              formControlProps={{ fullWidth: true }}
-                              inputProps={{
-                                value: this.state.data.code,
-                                disabled: true
-                              }} />
-                          </GridItem>
-
-                          <GridItem xs={12} sm={12} md={6}>
                             <CompanySelect id="companyId" labelText="Unidade"
                               inputProps={{
                                 disabled: !this.state.editing,
                                 onChange: e => this.setState({ data: { ...this.state.data, companyId: e.target.value } }),
                                 value: this.state.data.companyId
                               }} />
+                          </GridItem>
+
+                          <GridItem xs={12} sm={12} md={6}>
+                            <CustomInput formControlProps={{ fullWidth: true }}>
+                              {this.state.data.active !== null &&
+                                <div style={{ textAlign: "center", fontSize: "1.5em" }}>
+
+                                  <ElderTooltip birthDate={this.state.data.birthDate} />
+
+                                  <small style={{ marginLeft: "30px" }}>Status </small> <span style={{ color: this.state.data.active ? "green" : "red" }}>{this.state.data.active ? "Ativo" : "Desativado"}</span>
+
+                                </div>}
+                            </CustomInput>
                           </GridItem>
 
                         </GridContainer>
@@ -829,27 +794,65 @@ class CustomerDetails extends React.Component {
                       <CardBody>
 
                         <h3><small>Endereços</small></h3>
-                        {this.state.data && <AddressComponent
-                          editing={this.state.editing}
-                          creating={this.state.editing}
-                          data={this.state.data}
-                          onChange={(changed) => this.setState({
-                            data: {
-                              ...this.state.data,
-                              address: {
-                                ...this.state.data.address,
-                                ...changed
-                              }
-                            }
+
+
+                        {!this.state.creating && this.state.data && this.state.data.addresses && this.state.data.addresses.length <= 0 &&
+                          <div>
+                            <h4 style={{ textAlign: "center" }}>Nenhum endereço cadastrado.</h4>
+                          </div>}
+
+                        <GridContainer>
+
+                          {this.state.data && this.state.data.addresses && this.state.data.addresses.length > 0 && this.state.data.addresses.map((el, i) => {
+                            return (
+                              <GridItem xs={12} sm={12} md={12} lg={12} xl={12} key={i} style={{ borderLeft: "2px solid #cacaca", marginBottom: "10px" }}>
+                                <AddressComponent editing={this.state.editing} creating={this.state.editing} data={el} key={i}
+                                  onChange={(address) =>
+                                    this.setState({
+                                      data: {
+                                        ...this.state.data,
+                                        addresses: [
+                                          ...this.state.data.addresses.slice(0, i),
+                                          {
+                                            ...this.state.data.addresses[i],
+                                            ...address
+                                          },
+                                          ...this.state.data.addresses.slice(i + 1),
+                                        ]
+                                      }
+                                    })}
+                                  onRemove={() =>
+                                    this.setState({
+                                      data: {
+                                        ...this.state.data,
+                                        addresses: [
+                                          ...this.state.data.addresses.slice(0, i),
+                                          ...this.state.data.addresses.slice(i + 1),
+                                        ]
+                                      }
+                                    })} />
+                              </GridItem>
+                            );
                           })}
-                        />}
+
+                        </GridContainer>
+
+                        {this.state.editing &&
+                          <CustomInput>
+                            <Tooltip title="Adicionar endereço" arrow>
+                              <div>
+                                <Button color="primary"
+                                  onClick={e => this.setState({ data: { ...this.state.data, addresses: this.state.data.addresses.concat([{ zipCode: "", streetName: "", streetNumber: "", streetNumberComplement: "", neighborhood: "", city: "", state: "SP", alias: "", notes: "" }]) } })}>
+                                  <AddIcon />Adicionar Endereço</Button>
+                              </div>
+                            </Tooltip>
+                          </CustomInput>}
+
                       </CardBody>
                     </Card>
 
-
                   </GridItem>
                 </GridContainer>
-
 
               )}
             </div>
@@ -907,8 +910,8 @@ class CustomerDetails extends React.Component {
               <GridItem xs={12}>
 
                 {this.state.creating && <div>
-                  <Button onClick={e => this.props.history.goBack()}>Voltar</Button>
-                  <Button color="success" onClick={this.createUser.bind(this)}>Criar</Button>
+                  <Button onClick={e => this.props.history.push("/admin/customers")}>Voltar</Button>
+                  <Button color="success" onClick={e => this.createUser()}>Criar</Button>
                 </div>}
 
                 {(!this.state.creating && this.state.editing) &&
@@ -925,6 +928,7 @@ class CustomerDetails extends React.Component {
                       this.setState({
                         dialog: {
                           title: "Deseja continuar?",
+                          fullWidth: false,
                           display: true,
                           message: "Cuidado! Essa ação irá alterar os dados do cliente já existentes.",
                           actions: [
@@ -965,6 +969,7 @@ class CustomerDetails extends React.Component {
                         dialog: {
                           title: "Deseja continuar?",
                           display: true,
+                          fullWidth: false,
                           message: this.state.data.active
                             ? "Cuidado! Ao desativar um cliente não será possível efetuar novas ações relacionadas ao mesmo."
                             : "Cuidado! Ao ativar um cliente será possível efetuar novas ações relacionadas ao mesmo.",
@@ -1007,7 +1012,7 @@ class CustomerDetails extends React.Component {
 
                 {(!this.state.creating && !this.state.editing) &&
                   <div>
-                    <Button onClick={e => this.props.history.goBack()}>Voltar</Button>
+                    <Button onClick={e => this.props.history.push("/admin/customers")}>Voltar</Button>
                     <Button color="warning" onClick={e => {
                       this.setState({
                         creating: false,
@@ -1031,13 +1036,8 @@ class CustomerDetails extends React.Component {
 
 const mapStateToProps = state => {
   return {
-    jwt: state.jwt,
     account: state.account,
-    common: {
-      data: {
-        states: state.common.data.states
-      }
-    }
+    companies: state.common.data.companies
   };
 }
 

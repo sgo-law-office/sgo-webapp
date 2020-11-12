@@ -49,6 +49,7 @@ import {
     loadingResponseInterceptor,
     loadingResponseInterceptorOnError
 } from "components/Loading/interceptor";
+import ElderTooltip from "components/ElderTooltip/ElderTooltip";
 
 
 
@@ -309,61 +310,6 @@ class AttendanceSearch extends React.Component {
                                     />
 
                                 </GridItem>
-                                {/* 
-                                <GridItem xs={12} sm={12} md={6} lg={3}>
-                                    <CustomInput
-                                        formControlProps={{
-                                            fullWidth: true,
-                                            className: classes.margin + " " + classes.search
-                                        }}
-                                        inputProps={{
-                                            placeholder: "CPF",
-                                            inputProps: {
-                                                "width": "100%",
-                                                onKeyPress: e => { if (e.key === 'Enter') { this.search(); } },
-                                                onChange: e => this.setState({ params: { ...this.state.params, taxPayerIdentifier: e.target.value } }),
-                                                value: this.state.params.taxPayerIdentifier
-                                            }
-                                        }}
-                                    />
-                                </GridItem>
-
-                                <GridItem xs={12} sm={12} md={6} lg={3}>
-                                    <CustomInput
-                                        formControlProps={{
-                                            fullWidth: true,
-                                            className: classes.margin + " " + classes.search
-                                        }}
-                                        inputProps={{
-                                            placeholder: "RG",
-                                            inputProps: {
-                                                "width": "100%",
-                                                onKeyPress: e => { if (e.key === 'Enter') { this.search(); } },
-                                                onChange: e => this.setState({ params: { ...this.state.params, idCard: e.target.value } }),
-                                                value: this.state.params.idCard
-                                            }
-                                        }}
-                                    />
-                                </GridItem>
-
-                                <GridItem xs={12} sm={12} md={6} lg={3}>
-                                    <CustomInput select={true} labelText="Status"
-                                        inputProps={{
-                                            onChange: e => {
-                                                this.setState({ params: { ...this.state.params, active: e.target.value } });
-                                                this.search(undefined, undefined, undefined, undefined, undefined, e.target.value);
-                                            },
-                                            value: this.state.params.active
-                                        }}
-                                        formControlProps={{
-                                            fullWidth: true,
-                                            className: classes.margin + " " + classes.search
-                                        }}>
-                                        <option value={"all"}>Todos</option>
-                                        <option value={"true"}>Ativo</option>
-                                        <option value={"false"}>Desativado</option>
-                                    </CustomInput>
-                                </GridItem> */}
 
                             </GridContainer>}
 
@@ -448,7 +394,7 @@ class AttendanceSearch extends React.Component {
                                         {this.state.data.attendances && this.state.data.attendances.length > 0 && this.state.data.attendances.map((prop, key) => {
                                             return (
                                                 <TableRow key={key}>
-                                                    <TableCell style={{ padding: "5px 16px", width: "40%" }}>{prop.customerName}</TableCell>
+                                                    <TableCell style={{ padding: "5px 16px", width: "40%" }}>{prop.customerName} <ElderTooltip birthDate={prop.customerBirthDate} /></TableCell>
                                                     <Hidden only={["xs"]}>
                                                         <TableCell style={{ padding: "5px 16px", textAlign: "center" }}>
                                                             {{

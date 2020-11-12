@@ -17,6 +17,11 @@ import { loadingResponseInterceptorOnError } from "components/Loading/intercepto
 import { connect } from "react-redux";
 
 
+import AddIcon from '@material-ui/icons/Add';
+import DeleteIcon from '@material-ui/icons/Delete';
+import { Hidden, IconButton, Tooltip } from "@material-ui/core";
+
+
 const axios = Axios.create();
 axios.interceptors.request.use(authRequestInterceptor, authRequestInterceptorOnError);
 axios.interceptors.response.use(authResponseInterceptor, authResponseInterceptorOnError);
@@ -30,30 +35,7 @@ class AddressComponent extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            validCepInput: true,
-            addressFromCep: this.getInitialAddressFromCepState()
-        }
-    }
-
-    getInitialAddressFromCepState() {
-        return {
-            streetName: "",
-            neighborhood: "",
-            city: "",
-            state: "",
-            zipCode: ""
-        };
-    }
-
-    getInitialDataAddressState() {
-        return {
-            zipCode: "",
-            streetName: "",
-            streetNumber: "",
-            streetNumberComplement: "",
-            neighborhood: "",
-            city: "",
-            state: "SP",
+            validCepInput: true
         }
     }
 
@@ -64,8 +46,8 @@ class AddressComponent extends React.Component {
     }
 
     fetchCep() {
-        if (this.props.data.address.zipCode.length === 9) {
-            axios.get('/api/cep?cep=' + this.props.data.address.zipCode.replace(/^\D+/g, ''), {
+        if (this.props.data.zipCode.length === 9) {
+            axios.get('/api/cep?cep=' + this.props.data.zipCode.replace(/^\D+/g, ''), {
                 headers: {
                     "Accept": "application/json"
                 }
@@ -76,7 +58,7 @@ class AddressComponent extends React.Component {
                         if (data.state) {
 
                             this.props.onChange({
-                                ...this.props.data.address,
+                                ...this.props.data,
                                 zipCode: data.zipCode,
                                 streetName: data.streetName,
                                 neighborhood: data.neighborhood,
@@ -85,16 +67,13 @@ class AddressComponent extends React.Component {
                             });
                         } else {
                             this.setState({ validCepInput: false });
-                            this.props.onChange(this.getInitialDataAddressState());
                         }
                     } else {
                         this.setState({ validCepInput: false });
-                        this.props.onChange(this.getInitialDataAddressState());
                     }
                 })
                 .catch(err => {
                     this.setState({ validCepInput: false });
-                    this.props.onChange(this.getInitialDataAddressState());
                 })
         }
     }
@@ -103,7 +82,7 @@ class AddressComponent extends React.Component {
         var sanitizedValue = e.target.value.substring(0, 9).replace(/^(\d{5})(\d).*/, '$1-$2');
 
         this.props.onChange({
-            ...this.props.data.address,
+            ...this.props.data,
             zipCode: sanitizedValue
         });
 
@@ -113,118 +92,165 @@ class AddressComponent extends React.Component {
     render() {
         return (
             <div>
+                {this.props.data &&
+                    <div>
+                        <GridContainer>
+                            <GridItem xs={6} sm={6} md={4} lg={2}>
+                                <CustomInput labelText="CEP" style={{ width: "100%" }}
+                                    error={!this.state.validCepInput}
+                                    formControlProps={{ fullWidth: false, style: { width: "100%" } }}
+                                    inputProps={{
+                                        disabled: !this.props.editing,
+                                        value: this.props.data.zipCode,
+                                        onChange: this.changeCep.bind(this),
+                                        onKeyPress: this.cepInputKeyPress.bind(this),
+                                    }} />
+                            </GridItem>
+                            <GridItem xs={6} sm={3} md={2} lg={1}>
+                                {this.props.editing &&
+                                    <CustomInput>
+                                        <Button color="primary"
+                                            disabled={!this.props.editing || this.props.data.zipCode.length !== 9}
+                                            onClick={this.fetchCep.bind(this)}><SearchIcon /> Buscar</Button>
+                                    </CustomInput>}
+                            </GridItem>
 
-                <GridContainer>
-                    <GridItem xs={6} sm={6} md={4} lg={2}>
-                        <CustomInput id="address-cep" labelText="CEP" style={{ width: "100%" }}
-                            error={!this.state.validCepInput}
-                            formControlProps={{ fullWidth: false, style: { width: "100%" } }}
-                            inputProps={{
-                                disabled: !this.props.editing,
-                                value: this.props.data.address.zipCode,
-                                onChange: this.changeCep.bind(this),
-                                onKeyPress: this.cepInputKeyPress.bind(this),
-                            }} />
-                    </GridItem>
-                    <GridItem xs={6} sm={3} md={2} lg={1}>
-                        {this.props.editing &&
-                            <CustomInput>
-                                <Button color="primary"
-                                    disabled={!this.props.editing || this.props.data.address.zipCode.length !== 9}
-                                    onClick={this.fetchCep.bind(this)}><SearchIcon /> Buscar</Button>
-                            </CustomInput>}
-                    </GridItem>
+                        </GridContainer>
 
-                </GridContainer>
+                        <GridContainer>
 
-                <GridContainer>
+                            <GridItem xs={12} sm={12} md={6} lg={6}>
+                                <CustomInput id="streetName" labelText="Rua"
+                                    formControlProps={{ fullWidth: true }}
+                                    inputProps={{
+                                        disabled: !this.props.editing,
+                                        value: this.props.data.streetName,
+                                        onChange: (e) => this.props.onChange({
+                                            ...this.props.data,
+                                            streetName: e.target.value
+                                        })
+                                    }} />
+                            </GridItem>
 
-                    <GridItem xs={12} sm={12} md={6} lg={6}>
-                        <CustomInput id="streetName" labelText="Rua"
-                            formControlProps={{ fullWidth: true }}
-                            inputProps={{
-                                disabled: !this.props.editing,
-                                value: this.props.data.address.streetName,
-                                onChange: (e) => this.props.onChange({
-                                    ...this.props.data.address,
-                                    streetName: e.target.value
-                                })
-                            }} />
-                    </GridItem>
+                            <GridItem xs={6} sm={6} md={3} lg={3}>
+                                <CustomInput id="streetNumber" labelText="Número"
+                                    formControlProps={{ fullWidth: true }}
+                                    inputProps={{
+                                        disabled: !this.props.editing,
+                                        value: this.props.data.streetNumber,
+                                        onChange: (e) => this.props.onChange({
+                                            ...this.props.data,
+                                            streetNumber: e.target.value
+                                        })
+                                    }} />
+                            </GridItem>
 
-                    <GridItem xs={6} sm={6} md={3} lg={3}>
-                        <CustomInput id="streetNumber" labelText="Número"
-                            formControlProps={{ fullWidth: true }}
-                            inputProps={{
-                                disabled: !this.props.editing,
-                                value: this.props.data.address.streetNumber,
-                                onChange: (e) => this.props.onChange({
-                                    ...this.props.data.address,
-                                    streetNumber: e.target.value
-                                })
-                            }} />
-                    </GridItem>
+                            <GridItem xs={6} sm={6} md={3} lg={3}>
+                                <CustomInput id="streetNumberComplement" labelText="Complemento"
+                                    formControlProps={{ fullWidth: true }}
+                                    inputProps={{
+                                        disabled: !this.props.editing,
+                                        value: this.props.data.streetNumberComplement,
+                                        onChange: (e) => this.props.onChange({
+                                            ...this.props.data,
+                                            streetNumberComplement: e.target.value
+                                        })
+                                    }} />
+                            </GridItem>
 
-                    <GridItem xs={6} sm={6} md={3} lg={3}>
-                        <CustomInput id="streetNumberComplement" labelText="Complemento"
-                            formControlProps={{ fullWidth: true }}
-                            inputProps={{
-                                disabled: !this.props.editing,
-                                value: this.props.data.address.streetNumberComplement,
-                                onChange: (e) => this.props.onChange({
-                                    ...this.props.data.address,
-                                    streetNumberComplement: e.target.value
-                                })
-                            }} />
-                    </GridItem>
+                            <GridItem xs={12} sm={12} md={5} lg={5}>
+                                <CustomInput id="neighborhood" labelText="Bairro"
+                                    formControlProps={{ fullWidth: true }}
+                                    inputProps={{
+                                        disabled: !this.props.editing,
+                                        value: this.props.data.neighborhood,
+                                        onChange: (e) => this.props.onChange({
+                                            ...this.props.data,
+                                            neighborhood: e.target.value
 
-                    <GridItem xs={12} sm={12} md={5} lg={5}>
-                        <CustomInput id="neighborhood" labelText="Bairro"
-                            formControlProps={{ fullWidth: true }}
-                            inputProps={{
-                                disabled: !this.props.editing,
-                                value: this.props.data.address.neighborhood,
-                                onChange: (e) => this.props.onChange({
-                                    ...this.props.data.address,
-                                    neighborhood: e.target.value
+                                        })
+                                    }} />
+                            </GridItem>
 
-                                })
-                            }} />
-                    </GridItem>
+                            <GridItem xs={9} sm={8} md={5} lg={5}>
+                                <CustomInput id="city" labelText="Cidade"
+                                    formControlProps={{ fullWidth: true }}
+                                    inputProps={{
+                                        disabled: !this.props.editing,
+                                        value: this.props.data.city,
+                                        onChange: (e) => this.props.onChange({
+                                            ...this.props.data,
+                                            city: e.target.value
+                                        })
+                                    }} />
+                            </GridItem>
 
-                    <GridItem xs={9} sm={8} md={5} lg={5}>
-                        <CustomInput id="city" labelText="Cidade"
-                            formControlProps={{ fullWidth: true }}
-                            inputProps={{
-                                disabled: !this.props.editing,
-                                value: this.props.data.address.city,
-                                onChange: (e) => this.props.onChange({
-                                    ...this.props.data.address,
-                                    city: e.target.value
-                                })
-                            }} />
-                    </GridItem>
+                            <GridItem xs={3} sm={4} md={2} lg={2}>
+                                <CustomInput id="state" labelText="Estado" select={true}
+                                    formControlProps={{ fullWidth: true }}
+                                    labelProps={{ shrink: true }}
+                                    inputProps={{
+                                        disabled: !this.props.editing,
+                                        value: this.props.data.state,
+                                        onChange: (e) => this.props.onChange({
+                                            ...this.props.data,
+                                            state: e.target.value
+                                        }
+                                        )
+                                    }}>
+                                    {this.props.common.data.states.map((e, i) => {
+                                        return (<option value={e} key={i}>{e}</option>)
+                                    })}
+                                </CustomInput>
+                            </GridItem>
+                        </GridContainer>
+                        <GridContainer>
+                            <GridItem xs={12} sm={12} md={3}>
+                                <CustomInput labelText="Apelido"
+                                    formControlProps={{ fullWidth: true }}
+                                    inputProps={{
+                                        disabled: !this.props.editing,
+                                        value: this.props.data.alias,
+                                        onChange: (e) => this.props.onChange({
+                                            ...this.props.data,
+                                            alias: e.target.value
+                                        })
+                                    }} />
+                            </GridItem>
 
-                    <GridItem xs={3} sm={4} md={2} lg={2}>
-                        <CustomInput id="state" labelText="Estado" select={true}
-                            formControlProps={{ fullWidth: true }}
-                            labelProps={{ shrink: true }}
-                            inputProps={{
-                                disabled: !this.props.editing,
-                                value: this.props.data.address.state,
-                                onChange: (e) => this.props.onChange({
-                                    ...this.props.data.address,
-                                    state: e.target.value
-                                }
-                                )
-                            }}>
-                            {this.props.common.data.states.map((e, i) => {
-                                return (<option value={e} key={i}>{e}</option>)
-                            })}
-                        </CustomInput>
-                    </GridItem>
-                </GridContainer>
+                            <GridItem xs={12} sm={12} md={8}>
+                                <CustomInput labelText="Observações"
+                                    formControlProps={{ fullWidth: true }}
+                                    inputProps={{
+                                        disabled: !this.props.editing,
+                                        value: this.props.data.notes,
+                                        onChange: (e) => this.props.onChange({
+                                            ...this.props.data,
+                                            notes: e.target.value
+                                        })
+                                    }} />
+                            </GridItem>
 
+                            {this.props.editing && <GridItem xs={12} sm={12} md={1} style={{ textAlign: "right" }}>
+                                <CustomInput>
+                                    <Hidden only={["xs", "sm"]}>
+                                        <Tooltip title="Remover endereço" arrow>
+                                            <IconButton size="large" onClick={e => this.props.onRemove()}>
+                                                <DeleteIcon />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </Hidden>
+                                    <Hidden only={["md", "lg", "xl"]}>
+                                        <Button color="danger"
+                                            onClick={e => this.props.onRemove()}>
+                                            <DeleteIcon /> Remover endereço
+                                      </Button>
+                                    </Hidden>
+                                </CustomInput>
+                            </GridItem>}
+
+                        </GridContainer>
+                    </div>}
 
             </div>
         );

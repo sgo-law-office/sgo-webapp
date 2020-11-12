@@ -50,6 +50,7 @@ import {
   loadingResponseInterceptorOnError
 } from "components/Loading/interceptor";
 import { Gavel } from "@material-ui/icons";
+import ElderTooltip from "components/ElderTooltip/ElderTooltip";
 
 
 
@@ -483,7 +484,7 @@ class CustomerSearch extends React.Component {
                       return (
                         <TableRow key={key}>
                           <Hidden only={["xs"]}><TableCell style={{ padding: "5px 16px", textAlign: "center" }}>{prop.code}</TableCell></Hidden>
-                          <TableCell style={{ padding: "5px 16px", width: "40%" }}>{prop.name}</TableCell>
+                          <TableCell style={{ padding: "5px 16px", width: "40%" }}>{prop.name} <ElderTooltip birthDate={prop.birthDate} /> </TableCell>
                           <Hidden only={["xs", "sm", "md"]}><TableCell style={{ padding: "5px 16px", textAlign: "center" }}>{prop.active ? "Ativo" : "Desativado"}</TableCell></Hidden>
                           <Hidden only={["xs", "sm", "md"]}><TableCell style={{ padding: "5px 16px", textAlign: "center" }}><Moment date={prop.createdAt} format="DD/MM/YYYY" /></TableCell></Hidden>
                           <TableCell style={{ padding: "5px 16px", textAlign: "center" }}>
