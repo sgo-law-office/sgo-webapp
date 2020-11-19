@@ -10,14 +10,11 @@ import Search from "@material-ui/icons/Search";
 import GridItem from "components/Grid/GridItem.js";
 import GridContainer from "components/Grid/GridContainer.js";
 import Card from "components/Card/Card.js";
-import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 import CustomInput from "components/CustomInput/CustomInput.js";
 import Button from "components/CustomButtons/Button.js";
-import { NativeSelect, InputLabel, Table, TableHead, TableRow, TableCell, TableBody, IconButton, Hidden } from "@material-ui/core";
+import { Table, TableHead, TableRow, TableCell, TableBody, IconButton, Hidden } from "@material-ui/core";
 import { connect } from "react-redux";
-import { fetchCompanies } from "store/actions";
-import CardFooter from "components/Card/CardFooter";
 import CompanySelect from "components/CompanySelect/CompanySelect";
 
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
@@ -26,15 +23,13 @@ import SkipNextIcon from '@material-ui/icons/SkipNext';
 import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
 
 import Tooltip from '@material-ui/core/Tooltip';
-import ListIcon from '@material-ui/icons/List';
-import PersonOutlineIcon from '@material-ui/icons/PersonOutline';
-import AttachMoneyIcon from '@material-ui/icons/AttachMoney';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 import AssignmentOutlinedIcon from '@material-ui/icons/AssignmentOutlined';
 
 import Notification from "components/Notifications/Notification";
+import ElderTooltip from "components/ElderTooltip/ElderTooltip";
 
 import Axios from "axios";
 import {
@@ -49,7 +44,6 @@ import {
     loadingResponseInterceptor,
     loadingResponseInterceptorOnError
 } from "components/Loading/interceptor";
-import ElderTooltip from "components/ElderTooltip/ElderTooltip";
 
 
 
@@ -111,6 +105,8 @@ class AttendanceSearch extends React.Component {
                 status: "all",
                 companyId: null,
                 createdByName: "",
+                createdAtStartDate: "",
+                createdAtEndDate: "",
 
                 pagination: {
                     limit: 10,
@@ -171,6 +167,15 @@ class AttendanceSearch extends React.Component {
         if (this.state.params.createdByName && this.state.params.createdByName.trim().length > 0) {
             params.createdByName = this.state.params.createdByName;
         }
+
+        if (this.state.params.createdAtStartDate && this.state.params.createdAtStartDate.trim().length > 0) {
+            params.createdAtStartDate = this.state.params.createdAtStartDate;
+        }
+
+        if (this.state.params.createdAtEndDate && this.state.params.createdAtEndDate.trim().length > 0) {
+            params.createdAtEndDate = this.state.params.createdAtEndDate;
+        }
+
 
         if (customerId) {
             params.customerId = customerId;
@@ -240,12 +245,12 @@ class AttendanceSearch extends React.Component {
 
                             <GridItem xs={12} sm={12} md={4} lg={6}>
                                 <CustomInput
+                                    labelText="Nome do cliente"
                                     formControlProps={{
                                         fullWidth: true,
                                         className: classes.margin + " " + classes.search
                                     }}
                                     inputProps={{
-                                        placeholder: "Nome do cliente",
                                         onKeyPress: e => { if (e.key === 'Enter') { this.search(); } },
                                         onChange: e => this.setState({ params: { ...this.state.params, customerName: e.target.value } }),
                                         value: this.state.params.customerName
@@ -257,10 +262,10 @@ class AttendanceSearch extends React.Component {
                                 <CustomInput select={true} labelText="Status"
                                     inputProps={{
                                         onChange: e => {
-                                            this.setState({ params: { ...this.state.params, open: e.target.value } });
+                                            this.setState({ params: { ...this.state.params, status: e.target.value } });
                                             this.search(undefined, undefined, undefined, undefined, undefined, e.target.value);
                                         },
-                                        value: this.state.params.open
+                                        value: this.state.params.status
                                     }}
                                     formControlProps={{
                                         fullWidth: true,
@@ -297,15 +302,51 @@ class AttendanceSearch extends React.Component {
                             <GridContainer>
                                 <GridItem xs={12} sm={12} md={4} lg={6}>
                                     <CustomInput
+                                        labelText="Nome do atendente"
                                         formControlProps={{
                                             fullWidth: true,
                                             className: classes.margin + " " + classes.search
                                         }}
                                         inputProps={{
-                                            placeholder: "Nome do atendente",
                                             onKeyPress: e => { if (e.key === 'Enter') { this.search(); } },
                                             onChange: e => this.setState({ params: { ...this.state.params, createdByName: e.target.value } }),
                                             value: this.state.params.createdByName
+                                        }}
+                                    />
+
+                                </GridItem>
+
+                                <GridItem xs={12} sm={12} md={4} lg={3}>
+                                    <CustomInput
+                                        labelText="Criado em: Data inicial"
+                                        labelProps={{ shrink: true }}
+                                        formControlProps={{
+                                            fullWidth: true,
+                                            className: classes.margin + " " + classes.search
+                                        }}
+                                        inputProps={{
+                                            type: "date",
+                                            onKeyPress: e => { if (e.key === 'Enter') { this.search(); } },
+                                            onChange: e => this.setState({ params: { ...this.state.params, createdAtStartDate: e.target.value } }),
+                                            value: this.state.params.createdAtStartDate
+                                        }}
+                                    />
+
+                                </GridItem>
+
+                                <GridItem xs={12} sm={12} md={4} lg={3}>
+                                    <CustomInput
+                                        labelText="Criado em: Data final"
+                                        labelProps={{ shrink: true }}
+                                        formControlProps={{
+                                            fullWidth: true,
+                                            className: classes.margin + " " + classes.search
+                                        }}
+                                        inputProps={{
+                                            type: "date",
+                                            onKeyPress: e => { if (e.key === 'Enter') { this.search(); } },
+                                            onChange: e => this.setState({ params: { ...this.state.params, createdAtEndDate: e.target.value } }),
+                                            value: this.state.params.createdAtEndDate
                                         }}
                                     />
 

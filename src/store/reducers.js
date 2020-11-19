@@ -6,7 +6,9 @@ import {
   SUCCESS_GRAPH_USER_DATA, ERROR_GRAPH_USER_DATA,
   SUCCESS_FETCH_ACCOUNT, ERROR_FETCH_ACCOUNT,
   SUCCESS_FETCH_COMPANIES, ERROR_FETCH_COMPANIES,
-  SUCCESS_ACCOUNT_CREATE, ERROR_ACCOUNT_CREATE
+  SUCCESS_ACCOUNT_CREATE, ERROR_ACCOUNT_CREATE,
+
+  SUCCESS_FETCH_LAWYERS, ERROR_FETCH_LAWYERS, SUCCESS_FETCH_COURTS, ERROR_FETCH_COURTS
 
 } from './actions';
 
@@ -76,6 +78,30 @@ export default function (state = initialState, action) {
         }
       }
 
+    case SUCCESS_FETCH_LAWYERS:
+      return {
+        ...state,
+        common: {
+          ...state.common,
+          data: {
+            ...state.common.data,
+            lawyers: action.payload
+          }
+        }
+      }
+
+    case SUCCESS_FETCH_COURTS:
+      return {
+        ...state,
+        common: {
+          ...state.common,
+          data: {
+            ...state.common.data,
+            courts: action.payload
+          }
+        }
+      }
+
     case SUCCESS_FETCH_ACCOUNT:
     case SUCCESS_ACCOUNT_CREATE:
       return {
@@ -85,8 +111,10 @@ export default function (state = initialState, action) {
 
     case ERROR_FETCH_ACCOUNT:
       return state;
-      
+
     case ERROR_FETCH_COMPANIES:
+    case ERROR_FETCH_LAWYERS:
+    case ERROR_FETCH_COURTS:
     case ERROR_ACCOUNT_CREATE:
       return {
         ...state,

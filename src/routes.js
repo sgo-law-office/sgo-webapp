@@ -7,6 +7,7 @@ import ScheduleIcon from '@material-ui/icons/Schedule';
 import GavelIcon from '@material-ui/icons/Gavel';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import DescriptionIcon from '@material-ui/icons/Description';
+import StorageIcon from '@material-ui/icons/Storage';
 
 // core components/views for Admin layout
 import UserProfile from "views/UserProfile/UserProfile.js";
@@ -18,6 +19,7 @@ import ProcessPage from "views/Process/ProcessPage.js";
 import SchedulePage from "views/Schedule/SchedulePage.js";
 import PaymentPage from "views/Payment/PaymentPage.js";
 import HelpPage from "views/Help/HelpPage";
+import CrudPage from "views/crud/CrudPage";
 
 
 const dashboardRoutes = [
@@ -69,6 +71,13 @@ const dashboardRoutes = [
     name: "Pagamentos",
     icon: AttachMoneyIcon,
     component: PaymentPage,
+    layout: "/admin"
+  },
+  {
+    path: "/registrations",
+    name: "Cadastros",
+    icon: StorageIcon,
+    component: CrudPage,
     layout: "/admin"
   },
   {

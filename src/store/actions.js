@@ -28,6 +28,12 @@ export const ERROR_FETCH_ACCOUNT = "ERROR_FETCH_ACCOUNT";
 export const SUCCESS_FETCH_COMPANIES = "SUCCESS_FETCH_COMPANIES";
 export const ERROR_FETCH_COMPANIES = "ERROR_FETCH_COMPANIES";
 
+export const SUCCESS_FETCH_LAWYERS = "SUCCESS_FETCH_LAWYERS";
+export const ERROR_FETCH_LAWYERS = "ERROR_FETCH_LAWYERS";
+
+export const SUCCESS_FETCH_COURTS = "SUCCESS_FETCH_COURTS";
+export const ERROR_FETCH_COURTS = "ERROR_FETCH_COURTS";
+
 export const SUCCESS_ACCOUNT_CREATE = "SUCCESS_ACCOUNT_CREATE";
 export const ERROR_ACCOUNT_CREATE = "ERROR_ACCOUNT_CREATE";
 
@@ -144,10 +150,10 @@ export const createAccount = (account) => {
     }
 }
 
-export const fetchCompanies = (callback) => {
+export const fetchCompanies = (callback, force) => {
     console.log("FETCH COMPANIES");
     return (dispatch, getState) => {
-        if (getState().common.data.companies) {
+        if (!force && getState().common.data.companies) {
             dispatch({
                 type: SUCCESS_FETCH_COMPANIES,
                 payload: getState().common.data.companies
@@ -181,6 +187,94 @@ export const fetchCompanies = (callback) => {
             .catch(err => {
                 dispatch({
                     type: ERROR_FETCH_COMPANIES,
+                    payload: err
+                });
+            });
+    }
+}
+
+
+export const fetchLawyers = (companyId, callback, force) => {
+    console.log("FETCH LAWYERS");
+    return (dispatch, getState) => {
+        if (!force && getState().common.data.lawyers) {
+            dispatch({
+                type: SUCCESS_FETCH_LAWYERS,
+                payload: getState().common.data.lawyers
+            });
+            if (callback) {
+                callback(getState().common.data.lawyers);
+            }
+            return;
+        }
+        axios.get("/api/lawyers?companyId=" + companyId, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+            .then(res => {
+                if (res.status == 200) {
+                    dispatch({
+                        type: SUCCESS_FETCH_LAWYERS,
+                        payload: res.data
+                    });
+                    if (callback) {
+                        callback(res.data);
+                    }
+                } else {
+                    dispatch({
+                        type: ERROR_FETCH_LAWYERS,
+                        payload: res.status
+                    })
+                }
+            })
+            .catch(err => {
+                dispatch({
+                    type: ERROR_FETCH_LAWYERS,
+                    payload: err
+                });
+            });
+    }
+}
+
+
+export const fetchCourts = (callback, force) => {
+    console.log("FETCH COURTS");
+    return (dispatch, getState) => {
+        if (!force && getState().common.data.courts) {
+            dispatch({
+                type: SUCCESS_FETCH_COURTS,
+                payload: getState().common.data.courts
+            });
+            if (callback) {
+                callback(getState().common.data.courts);
+            }
+            return;
+        }
+        axios.get("/api/courts", {
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+            .then(res => {
+                if (res.status == 200) {
+                    dispatch({
+                        type: SUCCESS_FETCH_COURTS,
+                        payload: res.data
+                    });
+                    if (callback) {
+                        callback(res.data);
+                    }
+                } else {
+                    dispatch({
+                        type: ERROR_FETCH_COURTS,
+                        payload: res.status
+                    })
+                }
+            })
+            .catch(err => {
+                dispatch({
+                    type: ERROR_FETCH_COURTS,
                     payload: err
                 });
             });
