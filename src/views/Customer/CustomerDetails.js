@@ -529,14 +529,17 @@ class CustomerDetails extends React.Component {
 
                           <GridItem xs={12} sm={12} md={6}>
                             <CustomInput formControlProps={{ fullWidth: true }}>
-                              {this.state.data.active !== null &&
-                                <div style={{ textAlign: "center", fontSize: "1.5em" }}>
+                              <div style={{ textAlign: "center", fontSize: "1.5em" }}>
 
-                                  <ElderTooltip birthDate={this.state.data.birthDate} />
+                                <ElderTooltip birthDate={this.state.data.birthDate} />
 
-                                  <small style={{ marginLeft: "30px" }}>Status </small> <span style={{ color: this.state.data.active ? "green" : "red" }}>{this.state.data.active ? "Ativo" : "Desativado"}</span>
-
+                                {this.state.data.active !== null && <div style={{ display: "inline" }}>
+                                  <small style={{ marginLeft: "30px" }}>Status </small>
+                                  <span style={{ color: this.state.data.active ? "green" : "red" }}>
+                                    {this.state.data.active ? "Ativo" : "Desativado"}
+                                  </span>
                                 </div>}
+                              </div>
                             </CustomInput>
                           </GridItem>
 

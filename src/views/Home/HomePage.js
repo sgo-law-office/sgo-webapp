@@ -6,7 +6,7 @@ import React from "react";
 import Moment from "react-moment";
 
 import { withRouter } from "react-router-dom";
-import { AssignmentOutlined, ScheduleOutlined } from "@material-ui/icons";
+import { AssignmentOutlined, ScheduleOutlined, SearchOutlined } from "@material-ui/icons";
 
 
 import { authRequestInterceptor, authRequestInterceptorOnError, authResponseInterceptorOnError, authResponseInterceptor } from "auth/interceptor";
@@ -24,7 +24,7 @@ axios.interceptors.request.use(loadingRequestInterceptor, loadingRequestIntercep
 axios.interceptors.response.use(loadingResponseInterceptor, loadingResponseInterceptorOnError);
 
 
-class CustomerPage extends React.Component {
+class HomePage extends React.Component {
 
   constructor(props) {
     super(props);
@@ -71,7 +71,7 @@ class CustomerPage extends React.Component {
 
         <GridContainer>
 
-          <GridItem xs={12} sm={12} md={12} lg={6} style={{ marginBottom: "30px" }}>
+          {/* <GridItem xs={12} sm={12} md={12} lg={6} style={{ marginBottom: "30px" }}>
 
             <Card>
               <CardBody style={{ paddingBottom: "30px" }}>
@@ -98,7 +98,7 @@ class CustomerPage extends React.Component {
                   </GridItem>
 
                   <GridItem xs={12}>
-                    {/* <Table>
+                    <Table>
                       <TableBody>
                         <TableRow>
                           <TableCell style={{ width: "20%", textAlign: "center" }}>Cobrança</TableCell>
@@ -112,7 +112,7 @@ class CustomerPage extends React.Component {
                           </TableCell>
                         </TableRow>
                       </TableBody>
-                    </Table> */}
+                    </Table>
                     <p style={{ textAlign: "center" }}>Nenhum atendimento em aberto</p>
                   </GridItem>
 
@@ -139,7 +139,7 @@ class CustomerPage extends React.Component {
                   </GridItem>
 
                   <GridItem xs={12}>
-                    {/* <Table>
+                    <Table>
                       <TableBody>
                         <TableRow>
                           <TableCell style={{ width: "20%", textAlign: "center" }}>Retorno</TableCell>
@@ -154,7 +154,7 @@ class CustomerPage extends React.Component {
                         </TableRow>
 
                       </TableBody>
-                    </Table> */}
+                    </Table>
                     <p style={{ textAlign: "center" }}>Nenhum agendamento para hoje</p>
                   </GridItem>
 
@@ -167,7 +167,7 @@ class CustomerPage extends React.Component {
                   </GridItem>
 
                   <GridItem xs={12}>
-                    {/* <Table>
+                    <Table>
                       <TableBody>
                         <TableRow>
                           <TableCell style={{ width: "20%", textAlign: "center" }}>Cobrança</TableCell>
@@ -181,7 +181,7 @@ class CustomerPage extends React.Component {
                           </TableCell>
                         </TableRow>
                       </TableBody>
-                    </Table> */}
+                    </Table>
                     <p style={{ textAlign: "center" }}>Nenhum agendamento para os próximos dias</p>
                   </GridItem>
                 </GridContainer>
@@ -189,7 +189,7 @@ class CustomerPage extends React.Component {
               </CardBody>
             </Card>
 
-          </GridItem>
+          </GridItem> */}
 
           <GridItem xs={12} sm={12} md={12} lg={6} style={{ marginBottom: "30px" }}>
             <Card>
@@ -211,4 +211,4 @@ const mapStateToProps = state => {
 }
 
 export default connect(mapStateToProps)(
-  withRouter(CustomerPage));
+  withRouter(HomePage));

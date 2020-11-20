@@ -38,15 +38,19 @@ axios.interceptors.response.use(loadingResponseInterceptor, loadingResponseInter
 
 
 
-class AttendanceCreate extends React.Component {
+class FolderCreate extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {
 
+            currentStep: 1,
+
             data: {
+                companyId: "",
                 customerId: "",
-                customerName: ""
+                customerName: "",
+                notes: ""
             },
 
             customerSearch: {
@@ -76,10 +80,23 @@ class AttendanceCreate extends React.Component {
         this.selectCustomer = this.selectCustomer.bind(this);
     }
 
-    createAttendance() {
+    componentDidMount() {
+        this.setState({
+            data: {
+                ...this.state.data,
+                companyId: this.props.account.companyId
+            }
+        });
+    }
+
+    createFolder() {
         if (this.isValidToCreate(this.state.data)) {
 
-            axios.post("/api/attendances", { customerId: this.state.data.customerId, companyId: this.props.account.companyId }, {
+            axios.post("/api/folders", {
+                customerId: this.state.data.customerId,
+                companyId: this.state.data.companyId,
+                notes: this.state.data.notes
+            }, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -89,22 +106,22 @@ class AttendanceCreate extends React.Component {
                         this.setState({
                             creating: false,
                             editing: false,
-                            data: res.data.attendance,
+                            data: res.data,
                             notification: {
                                 ...this.state.notification,
                                 display: true,
                                 severity: "success",
-                                message: "Atendimento criado com sucesso."
+                                message: "Pasta criado com sucesso."
                             }
                         });
-                        this.props.history.push('/admin/attendances/' + res.data.attendance.id)
+                        this.props.history.push('/admin/folders/' + res.data.id)
                     } else {
                         this.setState({
                             notification: {
                                 ...this.state.notification,
                                 display: true,
                                 severity: "danger",
-                                message: "Falha ao criar atendimento, tente novamente."
+                                message: "Falha ao criar pasta, tente novamente."
                             }
                         });
                     }
@@ -115,7 +132,7 @@ class AttendanceCreate extends React.Component {
                             ...this.state.notification,
                             display: true,
                             severity: "danger",
-                            message: "Falha ao criar atendimento, tente novamente."
+                            message: "Falha ao criar pasta, tente novamente."
                         }
                     });
                 });
@@ -132,17 +149,17 @@ class AttendanceCreate extends React.Component {
             i++;
         }
 
-        this.setState({
-            validations: {
-                ...this.state.validations,
-                ...invalidFields
-            },
+        if (!data.companyId) {
+            invalidFields.companyId = true;
+            i++;
+        }
 
+        this.setState({
             notification: {
                 ...this.state.notification,
                 display: i > 0,
                 severity: "danger",
-                message: "Selecione um cliente para prosseguir."
+                message: invalidFields.customerId ? "Selecione um cliente para prosseguir." : "Selecione uma unidade para prosseguir."
             }
         });
 
@@ -224,7 +241,6 @@ class AttendanceCreate extends React.Component {
     render() {
         return (
             <div>
-
                 <Notification
                     severity={this.state.notification.severity}
                     message={this.state.notification.message}
@@ -335,8 +351,24 @@ class AttendanceCreate extends React.Component {
                     </DialogActions>
                 </Dialog>
 
-                <div>
-                    <h4 style={{ textAlign: "center" }}>Selecione um cliente para iniciar o atendimento</h4>
+
+                {this.state.currentStep === 1 && <div>
+
+                    <h4 style={{ textAlign: "center" }}>Em qual unidade essa pasta será criada?</h4>
+                    <GridContainer>
+                        <GridItem xs={12} sm={1} md={2} lg={3}></GridItem>
+                        <GridItem xs={10} sm={9} md={8} lg={6}>
+                            <CompanySelect
+                                labelText="Unidade"
+                                formControlProps={{ fullWidth: true }}
+                                inputProps={{ value: this.state.data.companyId, onChange: e => this.setState({ data: { ...this.state.data, companyId: e.target.value } }) }} />
+                        </GridItem>
+                    </GridContainer>
+                </div>}
+
+                {this.state.currentStep === 2 && <div>
+
+                    <h4 style={{ textAlign: "center" }}>Qual o cliente dessa pasta?</h4>
                     <GridContainer>
 
 
@@ -384,11 +416,47 @@ class AttendanceCreate extends React.Component {
                             </CustomInput>
                         </GridItem>
                     </GridContainer>
-                </div>
+                </div>}
+
+                {this.state.currentStep === 3 && <div>
+                    <h4 style={{ textAlign: "center" }}>Observações</h4>
+                    <h4 style={{ textAlign: "center" }}><small>As observações podem ser alteradas posteriormente</small></h4>
+                    <GridContainer>
+                        <GridItem xs={12} sm={1} md={2} lg={3}></GridItem>
+                        <GridItem xs={10} sm={9} md={8} lg={6}>
+                            <CustomInput textarea labelText="Observações" formControlProps={{ fullWidth: true }} labelProps={{ shrink: true }}
+                                inputProps={{
+                                    rows: 5,
+                                    value: this.state.data.notes,
+                                    onChange: e => this.setState({ data: { ...this.state.data, notes: e.target.value } })
+                                }} />
+                        </GridItem>
+                    </GridContainer>
+                </div>}
 
                 <div>
-                    <Button onClick={e => this.props.history.push("/admin/attendances")}>Voltar</Button>
-                    <Button color="success" onClick={this.createAttendance.bind(this)}>Criar</Button>
+                    {this.state.currentStep === 1 && <Button onClick={e => this.props.history.push("/admin/folders")}>Voltar</Button>}
+                    {this.state.currentStep === 1 && <Button color="success" onClick={e => this.setState({ currentStep: 2 })}>Avançar</Button>}
+
+                    {this.state.currentStep === 2 && <Button onClick={e => this.setState({ currentStep: 1 })}>Voltar</Button>}
+                    {this.state.currentStep === 2 && <Button color="success" onClick={e => {
+                        if (this.state.data.customerId) {
+                            this.setState({ currentStep: 3 });
+                        } else {
+                            this.setState({
+                                notification: {
+                                    ...this.state.notification,
+                                    display: true,
+                                    severity: "danger",
+                                    message: "Selecione um cliente para prosseguir."
+                                }
+                            });
+                        }
+                    }}>Avançar</Button>}
+
+                    {this.state.currentStep === 3 && <Button onClick={e => this.setState({ currentStep: 2 })}>Voltar</Button>}
+                    {this.state.currentStep === 3 && <Button color="success" onClick={this.createFolder.bind(this)}>Criar</Button>}
+
                 </div>
             </div >
         );
@@ -398,16 +466,10 @@ class AttendanceCreate extends React.Component {
 
 const mapStateToProps = state => {
     return {
-        jwt: state.jwt,
-        account: state.account,
-        common: {
-            data: {
-                states: state.common.data.states
-            }
-        }
+        account: state.account
     };
 }
 
 
 export default connect(mapStateToProps)(
-    withRouter(AttendanceCreate));
+    withRouter(FolderCreate));

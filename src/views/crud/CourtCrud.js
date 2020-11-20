@@ -8,7 +8,7 @@ import DescriptionIcon from '@material-ui/icons/Description';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
-import DeleteIcon from '@material-ui/icons/Delete';
+import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import { fetchCourts } from "store/actions";
 import CustomInput from "components/CustomInput/CustomInput";
 
@@ -177,7 +177,7 @@ class CourtCrud extends React.Component {
                               <span>
                                 <Button justIcon round color="transparent"
                                   onClick={e => this.removeCourt(prop)}>
-                                  <DeleteIcon />
+                                  <DeleteOutlineIcon />
 
                                 </Button>
                               </span>

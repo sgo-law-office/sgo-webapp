@@ -8,6 +8,7 @@ import GavelIcon from '@material-ui/icons/Gavel';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import DescriptionIcon from '@material-ui/icons/Description';
 import StorageIcon from '@material-ui/icons/Storage';
+import FolderIcon from '@material-ui/icons/Folder';
 
 // core components/views for Admin layout
 import UserProfile from "views/UserProfile/UserProfile.js";
@@ -20,6 +21,7 @@ import SchedulePage from "views/Schedule/SchedulePage.js";
 import PaymentPage from "views/Payment/PaymentPage.js";
 import HelpPage from "views/Help/HelpPage";
 import CrudPage from "views/crud/CrudPage";
+import FolderPage from "views/Folder/FolderPage";
 
 
 const dashboardRoutes = [
@@ -53,25 +55,35 @@ const dashboardRoutes = [
     layout: "/admin"
   },
   {
+    path: "/folders",
+    name: "Pastas",
+    icon: FolderIcon,
+    component: FolderPage,
+    layout: "/admin"
+  },
+  {
     path: "/processes",
     name: "Processos",
     icon: GavelIcon,
     component: ProcessPage,
-    layout: "/admin"
+    layout: "/admin",
+    hidden: true
   },
   {
     path: "/schedules",
     name: "Agendamentos",
     icon: ScheduleIcon,
     component: SchedulePage,
-    layout: "/admin"
+    layout: "/admin",
+    hidden: true
   },
   {
     path: "/payments",
     name: "Pagamentos",
     icon: AttachMoneyIcon,
     component: PaymentPage,
-    layout: "/admin"
+    layout: "/admin",
+    hidden: true
   },
   {
     path: "/registrations",
@@ -81,19 +93,23 @@ const dashboardRoutes = [
     layout: "/admin"
   },
   {
-    path: "/me",
-    name: "Perfil",
-    component: UserProfile,
-    layout: "/admin",
-    hidden: true
-  },
-  {
     path: "/help",
     name: "Ajuda",
     component: HelpPage,
     icon: "help",
     layout: "/admin"
+  },
+
+
+  {
+    path: "/me",
+    name: "Perfil",
+    component: UserProfile,
+    layout: "/admin",
+    hidden: true
   }
+
+
   // {
   //   path: "/table",
   //   name: "Table List",

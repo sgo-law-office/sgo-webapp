@@ -2,7 +2,7 @@ import React from "react";
 import { withRouter } from "react-router-dom";
 import Button from "components/CustomButtons/Button.js";
 
-class ContractDetails extends React.Component {
+class FolderDetails extends React.Component {
 
     render() {
         return (
@@ -16,4 +16,4 @@ class ContractDetails extends React.Component {
 }
 
 
-export default withRouter(ContractDetails);
+export default withRouter(FolderDetails);

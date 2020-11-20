@@ -12,7 +12,7 @@ import CompanySelect from "components/CompanySelect/CompanySelect";
 import CustomInput from "components/CustomInput/CustomInput";
 import SearchIcon from '@material-ui/icons/Search';
 import CheckIcon from '@material-ui/icons/Check';
-import DeleteIcon from '@material-ui/icons/Delete';
+import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 
 
 import Axios from "axios";
@@ -268,7 +268,7 @@ class LawyerCrud extends React.Component {
                                                             <span>
                                                                 <Button justIcon round color="transparent"
                                                                     onClick={e => this.removeLawyer(prop)}>
-                                                                    <DeleteIcon />
+                                                                    <DeleteOutlineIcon />
 
                                                                 </Button>
                                                             </span>

@@ -26,11 +26,10 @@ import Tooltip from '@material-ui/core/Tooltip';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
-import DescriptionIcon from '@material-ui/icons/Description';
-
 import Notification from "components/Notifications/Notification";
 import ElderTooltip from "components/ElderTooltip/ElderTooltip";
-
+import DescriptionOutlinedIcon from '@material-ui/icons/DescriptionOutlined';
+import AssignmentOutlinedIcon from '@material-ui/icons/AssignmentOutlined';
 
 import Axios from "axios";
 import {
@@ -211,7 +210,6 @@ class ContractSearch extends React.Component {
           }
         });
       });
-
   }
 
   openDetails(contract) {
@@ -262,10 +260,10 @@ class ContractSearch extends React.Component {
                 <CustomInput select={true} labelText="Status"
                   inputProps={{
                     onChange: e => {
-                      this.setState({ params: { ...this.state.params, open: e.target.value } });
+                      this.setState({ params: { ...this.state.params, status: e.target.value } });
                       this.search(undefined, undefined, undefined, undefined, undefined, e.target.value);
                     },
-                    value: this.state.params.open
+                    value: this.state.params.status
                   }}
                   formControlProps={{
                     fullWidth: true,
@@ -448,8 +446,8 @@ class ContractSearch extends React.Component {
                     {this.state.data.contracts && this.state.data.contracts.length > 0 && this.state.data.contracts.map((prop, key) => {
                       return (
                         <TableRow key={key}>
-                          <TableCell style={{ padding: "5px 16px", width: "40%" }}>{prop.customerName} <ElderTooltip birthDate={prop.customerBirthDate} /></TableCell>
-                          <Hidden only={["xs", "sm"]}><TableCell style={{ padding: "5px 16px", width: "40%" }}>{prop.lawyerName}</TableCell></Hidden>
+                          <TableCell style={{ padding: "5px 16px", width: "30%" }}>{prop.customerName} <ElderTooltip birthDate={prop.customerBirthDate} /></TableCell>
+                          <Hidden only={["xs", "sm"]}><TableCell style={{ padding: "5px 16px", width: "30%" }}>{prop.lawyerName}</TableCell></Hidden>
                           <Hidden only={["xs"]}>
                             <TableCell style={{ padding: "5px 16px", textAlign: "center" }}>
                               {{
@@ -464,10 +462,18 @@ class ContractSearch extends React.Component {
                               <span>
                                 <Button justIcon round color="transparent"
                                   onClick={e => this.openDetails(prop)}>
-                                  <DescriptionIcon />
+                                  <DescriptionOutlinedIcon />
                                 </Button>
                               </span>
                             </Tooltip>
+                            {prop.attendanceId && <Tooltip title="Atendimento" arrow>
+                              <span>
+                                <Button justIcon round color="transparent"
+                                  onClick={e => this.props.history.push("/admin/attendances/" + prop.attendanceId)}>
+                                  <AssignmentOutlinedIcon />
+                                </Button>
+                              </span>
+                            </Tooltip>}
 
                           </TableCell>
                         </TableRow>
