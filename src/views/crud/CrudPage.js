@@ -5,6 +5,7 @@ import { Route, Switch, withRouter } from "react-router-dom";
 import CompanyCrud from "./CompanyCrud";
 import LawyerCrud from "./LawyerCrud";
 import CourtCrud from "./CourtCrud";
+import PhoneCrud from "./PhoneCrud";
 
 
 class CrudPage extends React.Component {
@@ -15,6 +16,7 @@ class CrudPage extends React.Component {
                 <Route path="/admin/registrations/companies" component={() => (<CompanyCrud />)}></Route>
                 <Route path="/admin/registrations/lawyers" component={() => (<LawyerCrud />)}></Route>
                 <Route path="/admin/registrations/courts" component={() => (<CourtCrud />)}></Route>
+                <Route path="/admin/registrations/phones" component={() => (<PhoneCrud />)}></Route>
                 <Route path="/admin/registrations">
                     <div>
                         <h3>Cadastros internos</h3>
@@ -23,9 +25,10 @@ class CrudPage extends React.Component {
                         <GridContainer>
                             <GridItem>
                                 <ul>
-                                    <li><a href="/admin/registrations/companies" onClick={e => { e.preventDefault(); this.props.history.push("/admin/registrations/companies") }}>Cadastro de Unidades e Departamentos</a></li>
-                                    <li><a href="/admin/registrations/lawyers" onClick={e => { e.preventDefault(); this.props.history.push("/admin/registrations/lawyers") }}>Cadastro de Advogados</a></li>
-                                    <li><a href="/admin/registrations/courts" onClick={e => { e.preventDefault(); this.props.history.push("/admin/registrations/courts") }}>Cadastro de Varas</a></li>
+                                    <li><a href="/admin/registrations/companies" onClick={e => { e.preventDefault(); this.props.history.push("/admin/registrations/companies") }}>Unidades e Departamentos</a></li>
+                                    <li><a href="/admin/registrations/lawyers" onClick={e => { e.preventDefault(); this.props.history.push("/admin/registrations/lawyers") }}>Advogados</a></li>
+                                    <li><a href="/admin/registrations/courts" onClick={e => { e.preventDefault(); this.props.history.push("/admin/registrations/courts") }}>Varas</a></li>
+                                    <li><a href="/admin/registrations/phones" onClick={e => { e.preventDefault(); this.props.history.push("/admin/registrations/phones") }}>Telefones Úteis</a></li>
                                 </ul>
                             </GridItem>
                         </GridContainer>

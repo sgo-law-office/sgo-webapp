@@ -8,16 +8,16 @@ import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
-import { fetchCourts } from "store/actions";
+import { fetchPhones } from "store/actions";
 import CustomInput from "components/CustomInput/CustomInput";
+import AddIcon from '@material-ui/icons/Add';
+import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
-
 
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import SkipNextIcon from '@material-ui/icons/SkipNext';
 import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
-
 
 
 import Axios from "axios";
@@ -46,7 +46,7 @@ axios.interceptors.request.use(loadingRequestInterceptor, loadingRequestIntercep
 axios.interceptors.response.use(loadingResponseInterceptor, loadingResponseInterceptorOnError);
 
 
-class CourtCrud extends React.Component {
+class PhoneCrud extends React.Component {
 
   constructor(props) {
     super(props);
@@ -62,8 +62,10 @@ class CourtCrud extends React.Component {
       dialog: {
         display: false,
         data: {
+          id: null,
           name: "",
-          notes: ""
+          notes: "",
+          phones: []
         }
       },
       notification: {
@@ -75,23 +77,24 @@ class CourtCrud extends React.Component {
   }
 
   componentDidMount() {
-    this.props.fetchCourts((courts) => this.setState({ pagination: { ...this.state.pagination, total: courts.total } }));
+    this.props.fetchPhones((phones) => this.setState({ pagination: { ...this.state.pagination, total: phones.total } }));
   }
 
-  createCourt() {
-    if (!this.state.dialog.data.name || this.state.dialog.data.name.trim().length === 0) {
+  createPhone() {
+    if (!this.state.dialog.data.name || this.state.dialog.data.name.trim().length === 0 ||
+      !this.state.dialog.data.phones || this.state.dialog.data.phones.filter(el => el.trim().length > 0).length === 0) {
       this.setState({
         notification: {
           ...this.state.notification,
           display: true,
           severity: "danger",
-          message: "O nome é obrigatório."
+          message: "O nome e ao menos 1 telefone são obrigatórios."
         }
       });
       return;
     }
 
-    axios.post("/api/courts", this.state.dialog.data, {
+    axios.post("/api/phones", this.state.dialog.data, {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
@@ -108,17 +111,18 @@ class CourtCrud extends React.Component {
               ...this.state.notification,
               display: true,
               severity: "success",
-              message: "Vara criada com sucesso."
+              message: "Telefone criado com sucesso."
             }
           });
-          this.props.fetchCourts((courts) => this.setState({ pagination: { ...this.state.pagination, total: courts.total } }));
+          this.props.fetchPhones((phones) => this.setState({ pagination: { ...this.state.pagination, total: phones.total } }));
+
         } else {
           this.setState({
             notification: {
               ...this.state.notification,
               display: true,
               severity: "danger",
-              message: "Falha ao criar vara, tente novamente."
+              message: "Falha ao criar telefone, tente novamente."
             }
           });
         }
@@ -129,26 +133,68 @@ class CourtCrud extends React.Component {
             ...this.state.notification,
             display: true,
             severity: "danger",
-            message: "Falha ao criar vara, tente novamente."
+            message: "Falha ao criar telefone, tente novamente."
           }
         });
       });
   }
 
-  updateCourt() {
-    if (!this.state.dialog.data.name || this.state.dialog.data.name.trim().length === 0 || !this.state.dialog.data.id) {
+  removePhone(phone) {
+    axios.delete("/api/phones/" + phone.id, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    })
+      .then(res => {
+        if (res.status == 200) {
+          this.setState({
+            notification: {
+              ...this.state.notification,
+              display: true,
+              severity: "success",
+              message: "Telefone removido com sucesso."
+            }
+          });
+          this.props.fetchPhones((phones) => this.setState({ pagination: { ...this.state.pagination, total: phones.total } }));
+        } else {
+          this.setState({
+            notification: {
+              ...this.state.notification,
+              display: true,
+              severity: "danger",
+              message: "Falha ao remover telefone, tente novamente."
+            }
+          });
+        }
+      })
+      .catch(err => {
+        this.setState({
+          notification: {
+            ...this.state.notification,
+            display: true,
+            severity: "danger",
+            message: "Falha ao remover telefone, tente novamente."
+          }
+        });
+      });
+  }
+
+  updatePhone() {
+    if (!this.state.dialog.data.name || this.state.dialog.data.name.trim().length === 0 ||
+      !this.state.dialog.data.phones || this.state.dialog.data.phones.filter(el => el.trim().length > 0).length === 0 ||
+      !this.state.dialog.data.id) {
       this.setState({
         notification: {
           ...this.state.notification,
           display: true,
           severity: "danger",
-          message: "O nome é obrigatório."
+          message: "O nome e ao menos 1 telefone são obrigatórios."
         }
       });
       return;
     }
 
-    axios.put("/api/courts/" + this.state.dialog.data.id, this.state.dialog.data, {
+    axios.put("/api/phones/" + this.state.dialog.data.id, this.state.dialog.data, {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
@@ -165,17 +211,17 @@ class CourtCrud extends React.Component {
               ...this.state.notification,
               display: true,
               severity: "success",
-              message: "Vara alterada com sucesso."
+              message: "Telefone alterado com sucesso."
             }
           });
-          this.props.fetchCourts((courts) => this.setState({ pagination: { ...this.state.pagination, total: courts.total } }));
+          this.props.fetchPhones((phones) => this.setState({ pagination: { ...this.state.pagination, total: phones.total } }));
         } else {
           this.setState({
             notification: {
               ...this.state.notification,
               display: true,
               severity: "danger",
-              message: "Falha ao atualizar vara, tente novamente."
+              message: "Falha ao atualizar telefone, tente novamente."
             }
           });
         }
@@ -186,47 +232,7 @@ class CourtCrud extends React.Component {
             ...this.state.notification,
             display: true,
             severity: "danger",
-            message: "Falha ao atualizar vara, tente novamente."
-          }
-        });
-      });
-  }
-
-  removeCourt(court) {
-    axios.delete("/api/courts/" + court.id, {
-      headers: {
-        'Accept': 'application/json'
-      }
-    })
-      .then(res => {
-        if (res.status == 200) {
-          this.setState({
-            notification: {
-              ...this.state.notification,
-              display: true,
-              severity: "success",
-              message: "Vara removida com sucesso."
-            }
-          });
-          this.props.fetchCourts((courts) => this.setState({ pagination: { ...this.state.pagination, total: courts.total } }));
-        } else {
-          this.setState({
-            notification: {
-              ...this.state.notification,
-              display: true,
-              severity: "danger",
-              message: "Falha ao remover vara, tente novamente."
-            }
-          });
-        }
-      })
-      .catch(err => {
-        this.setState({
-          notification: {
-            ...this.state.notification,
-            display: true,
-            severity: "danger",
-            message: "Falha ao remover vara, tente novamente."
+            message: "Falha ao atualizar telefone, tente novamente."
           }
         });
       });
@@ -252,16 +258,88 @@ class CourtCrud extends React.Component {
         />
 
         <Dialog fullWidth maxWidth="sm" open={this.state.dialog.display} onClose={() => { this.setState({ dialog: { ...this.state.dialog, display: false } }) }}>
-          <DialogTitle>Adicionar vara</DialogTitle>
+          <DialogTitle>Adicionar telefone</DialogTitle>
           <DialogContent>
             <DialogContentText>
               <GridContainer>
+
                 <GridItem xs={12}>
                   <CustomInput labelText="Nome" formControlProps={{ fullWidth: true }}
                     inputProps={{
                       value: this.state.dialog.data.name,
                       onChange: (e) => this.setState({ dialog: { ...this.state.dialog, data: { ...this.state.dialog.data, name: e.target.value } } })
                     }} />
+                </GridItem>
+
+                {this.state.dialog.data.phones.map((prop, i) => {
+                  return (
+                    <GridItem xs={12} sm={12} md={12} lg={12} xl={12} key={i} style={{ borderLeft: "2px solid #cacaca", marginBottom: "10px" }}>
+                      <GridContainer>
+                        <GridItem xs={10}>
+                          <CustomInput labelText="Telefone" formControlProps={{ fullWidth: true }}
+                            inputProps={{
+                              value: prop,
+                              onChange: (e) => this.setState({
+                                dialog: {
+                                  ...this.state.dialog,
+                                  data: {
+                                    ...this.state.dialog.data,
+                                    phones: [
+                                      ...this.state.dialog.data.phones.slice(0, i),
+                                      e.target.value,
+                                      ...this.state.dialog.data.phones.slice(i + 1),
+                                    ]
+                                  }
+                                }
+                              })
+                            }} />
+                        </GridItem>
+                        <GridItem xs={2}>
+                          <CustomInput formControlProps={{ fullWidth: true }} style={{ textAlign: "left" }}>
+                            <Tooltip title="Remover telefone" arrow>
+                              <span>
+                                <Button color="transparent" justIcon onClick={() => {
+                                  const phones = [
+                                    ...this.state.dialog.data.phones.slice(0, i),
+                                    ...this.state.dialog.data.phones.slice(i + 1)
+                                  ];
+                                  this.setState({
+                                    dialog: {
+                                      ...this.state.dialog,
+                                      data: {
+                                        ...this.state.dialog.data,
+                                        phones: phones.length === 0 ? [""] : phones
+                                      }
+                                    }
+                                  })
+                                }}><DeleteIcon /></Button>
+                              </span>
+                            </Tooltip>
+                          </CustomInput>
+                        </GridItem>
+                      </GridContainer>
+
+                    </GridItem>
+                  );
+                })}
+
+                <GridItem xs={12}>
+                  <Tooltip title="Adicionar telefone" arrow>
+                    <span>
+                      <Button color="transparent" onClick={() => this.setState({
+                        dialog: {
+                          ...this.state.dialog,
+                          data: {
+                            ...this.state.dialog.data,
+                            phones: [
+                              ...this.state.dialog.data.phones,
+                              ""
+                            ]
+                          }
+                        }
+                      })}><AddIcon /><small>Adicionar</small></Button>
+                    </span>
+                  </Tooltip>
                 </GridItem>
                 <GridItem xs={12}>
                   <CustomInput labelText="Observações" formControlProps={{ fullWidth: true }} textarea
@@ -275,16 +353,15 @@ class CourtCrud extends React.Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            {this.state.dialog.data.id && <Button color="success" autoFocus onClick={() => this.updateCourt()}>Salvar Modificações</Button>}
-            {!this.state.dialog.data.id && <Button color="success" autoFocus onClick={() => this.createCourt()}>Adicionar</Button>}
+            {this.state.dialog.data.id && <Button color="success" autoFocus onClick={() => this.updatePhone()}>Salvar Modificações</Button>}
+            {!this.state.dialog.data.id && <Button color="success" autoFocus onClick={() => this.createPhone()}>Adicionar</Button>}
+
             <Button color="transparent" autoFocus onClick={() => { this.setState({ dialog: { ...this.state.dialog, display: false } }) }}>Cancelar</Button>
           </DialogActions>
         </Dialog>
 
 
-
-
-        <h3>Cadastros de Varas</h3>
+        <h3>Cadastros de Telefones</h3>
         <p>&nbsp;</p>
         <GridContainer>
 
@@ -294,11 +371,13 @@ class CourtCrud extends React.Component {
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell style={{ width: "40%", textAlign: "center" }}><CustomInput
-                        labelText="Nome"
-                        formControlProps={{ fullWidth: true, style: { marginTop: "0" } }}
-                        inputProps={{ value: this.state.filter.name, onChange: e => this.setState({ filter: { ...this.state.filter, name: e.target.value }, pagination: { ...this.state.pagination, offset: 0 } }) }} /></TableCell>
-                      <TableCell style={{ width: "40%", textAlign: "center" }}>Observações</TableCell>
+                      <TableCell style={{ width: "20%", textAlign: "center" }}>
+                        <CustomInput
+                          labelText="Nome"
+                          formControlProps={{ fullWidth: true, style: { marginTop: "0" } }}
+                          inputProps={{ value: this.state.filter.name, onChange: e => this.setState({ filter: { ...this.state.filter, name: e.target.value }, pagination: { ...this.state.pagination, offset: 0 } }) }} /></TableCell>
+                      <TableCell style={{ width: "30%", textAlign: "center" }}>Telefones</TableCell>
+                      <TableCell style={{ width: "20%", textAlign: "center" }}>Observações</TableCell>
                       <TableCell style={{ textAlign: "center" }}>Ações</TableCell>
                     </TableRow>
                   </TableHead>
@@ -307,26 +386,34 @@ class CourtCrud extends React.Component {
                 <div style={{ maxHeight: "500px", overflow: "auto", width: "100%" }}>
                   <Table>
                     <TableBody>
-                      {this.props.courts && this.props.courts.data && this.props.courts.data.length > 0 && this.props.courts.data
+                      {this.props.phones && this.props.phones.data && this.props.phones.data.length > 0 && this.props.phones.data
                         .filter(el => this.state.filter.name.trim().length == 0 || el.name.toLowerCase().search(this.state.filter.name.toLowerCase().trim()) != -1)
                         .slice(this.state.pagination.offset, this.state.pagination.offset + this.state.pagination.limit)
                         .map((prop, key) => {
                           return (
                             <TableRow key={key}>
-                              <TableCell style={{ width: "40%" }}>{prop.name}</TableCell>
-                              <TableCell style={{ width: "40%" }}>{prop.notes}</TableCell>
+                              <TableCell style={{ width: "20%" }}>{prop.name}</TableCell>
+                              <TableCell style={{ width: "30%" }}>
+                                <ul>
+                                  {prop.phones.map((el, i) => {
+                                    return <li key={i}>{el}</li>
+
+                                  })}
+                                </ul>
+                              </TableCell>
+                              <TableCell style={{ width: "20%" }}>{prop.notes}</TableCell>
                               <TableCell style={{ padding: "5px 16px", textAlign: "center" }}>
-                                <Tooltip title="Remover vara" arrow>
+                                <Tooltip title="Remover telefone" arrow>
                                   <span>
                                     <Button justIcon round color="transparent"
-                                      onClick={e => this.removeCourt(prop)}>
+                                      onClick={e => this.removePhone(prop)}>
                                       <DeleteOutlineIcon />
 
                                     </Button>
                                   </span>
                                 </Tooltip>
 
-                                <Tooltip title="Editar vara" arrow>
+                                <Tooltip title="Editar telefone" arrow>
                                   <span>
                                     <Button justIcon round color="transparent"
                                       onClick={e => this.setState({
@@ -397,10 +484,10 @@ class CourtCrud extends React.Component {
                   </GridItem>
                 </GridContainer>
 
-                {!(this.props.courts && this.props.courts.data && this.props.courts.data.length > 0) &&
+                {!(this.props.phones && this.props.phones.data && this.props.phones.data.length > 0) &&
                   <div style={{ width: "100%" }}>
-                    <h4 style={{ textAlign: "center" }}>Nenhuma vara encontrada.</h4>
-                    <span><ArrowDownwardIcon />Clique em <span style={{ fontWeight: "bold" }}>Adicionar vara</span> para criar uma nova vara.</span>
+                    <h4 style={{ textAlign: "center" }}>Nenhuma telefone encontrado.</h4>
+                    <span><ArrowDownwardIcon />Clique em <span style={{ fontWeight: "bold" }}>Adicionar telefone</span> para criar um novo telefone.</span>
                   </div>}
 
 
@@ -411,7 +498,7 @@ class CourtCrud extends React.Component {
 
         <div style={{ margin: "15px 0" }}>
           <Button onClick={e => this.props.history.push("/admin/registrations")}>Voltar</Button>
-          <Button color="success" onClick={e => this.setState({ dialog: { ...this.state.dialog, display: true, data: { name: "", notes: "" } } })}>Adicionar vara</Button>
+          <Button color="success" onClick={e => this.setState({ dialog: { ...this.state.dialog, display: true, data: { name: "", notes: "", phones: [""] } } })}>Adicionar telefone</Button>
         </div>
 
       </div>
@@ -423,13 +510,13 @@ class CourtCrud extends React.Component {
 
 const mapStateToProps = state => {
   return {
-    courts: state.common.data.courts
+    phones: state.common.data.phones
   };
 }
 
 const mapDispatchToProps = dispatch => ({
-  fetchCourts: (callback) => dispatch(fetchCourts(callback, true))
+  fetchPhones: (callback) => dispatch(fetchPhones(callback, true))
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(
-  withRouter(CourtCrud));
+  withRouter(PhoneCrud));

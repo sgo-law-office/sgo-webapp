@@ -34,6 +34,9 @@ export const ERROR_FETCH_LAWYERS = "ERROR_FETCH_LAWYERS";
 export const SUCCESS_FETCH_COURTS = "SUCCESS_FETCH_COURTS";
 export const ERROR_FETCH_COURTS = "ERROR_FETCH_COURTS";
 
+export const SUCCESS_FETCH_PHONES = "SUCCESS_FETCH_PHONES";
+export const ERROR_FETCH_PHONES = "ERROR_FETCH_PHONES";
+
 export const SUCCESS_ACCOUNT_CREATE = "SUCCESS_ACCOUNT_CREATE";
 export const ERROR_ACCOUNT_CREATE = "ERROR_ACCOUNT_CREATE";
 
@@ -275,6 +278,50 @@ export const fetchCourts = (callback, force) => {
             .catch(err => {
                 dispatch({
                     type: ERROR_FETCH_COURTS,
+                    payload: err
+                });
+            });
+    }
+}
+
+
+export const fetchPhones = (callback, force) => {
+    console.log("FETCH PHONES");
+    return (dispatch, getState) => {
+        if (!force && getState().common.data.phones) {
+            dispatch({
+                type: SUCCESS_FETCH_PHONES,
+                payload: getState().common.data.phones
+            });
+            if (callback) {
+                callback(getState().common.data.phones);
+            }
+            return;
+        }
+        axios.get("/api/phones", {
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+            .then(res => {
+                if (res.status == 200) {
+                    dispatch({
+                        type: SUCCESS_FETCH_PHONES,
+                        payload: res.data
+                    });
+                    if (callback) {
+                        callback(res.data);
+                    }
+                } else {
+                    dispatch({
+                        type: ERROR_FETCH_PHONES,
+                        payload: res.status
+                    })
+                }
+            })
+            .catch(err => {
+                dispatch({
+                    type: ERROR_FETCH_PHONES,
                     payload: err
                 });
             });
