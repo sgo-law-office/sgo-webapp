@@ -231,7 +231,6 @@ class ProcessCreate extends React.Component {
     const { data } = this.state;
 
     if (
-      !data.code ||
       !data.companyId ||
       !data.customerId ||
       !data.lawyerId
@@ -1275,22 +1274,7 @@ class ProcessCreate extends React.Component {
             <Button onClick={(e) => this.setState({ currentStep: 4 })}>
               Voltar
             </Button>
-            <Button color="success"
-              onClick={(e) => {
-                if (this.state.data.code && this.state.data.code.trim().length > 0) {
-                  this.createProcess()
-                } else {
-                  this.setState({
-                    notification: {
-                      ...this.state.notification,
-                      display: true,
-                      severity: "danger",
-                      message: "O número do processo é obrigatório.",
-                    },
-                  });
-                }
-              }}
-            >
+            <Button color="success" onClick={(e) => { this.createProcess() }} >
               Criar Processo
             </Button>
           </div>
