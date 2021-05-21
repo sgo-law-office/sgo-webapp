@@ -63,7 +63,6 @@ import { connect } from "react-redux";
 
 import moment from "moment";
 import ProcessHistoryComponent from "./ProcessHistoryComponent";
-import { fetchLawyers } from "store/actions";
 import { fetchCourts } from "store/actions";
 import { fetchProcessActions } from "store/actions";
 //import ContractReportComponent from "./ContractReportComponent";
@@ -150,9 +149,13 @@ class ProcessDetails extends React.Component {
         display: false,
         query: {
           name: ""
+        },
+        pagination: {
+          offset: 0,
+          limit: 10,
+          total: 0
         }
       },
-
 
       notification: {
         display: false,
@@ -279,7 +282,6 @@ class ProcessDetails extends React.Component {
   }
 
   updateCode() {
-
     if (!this.state.data.id) return;
 
     axios.patch("/api/processes/" + this.state.data.id + "/code/" + this.state.data.code,
@@ -323,6 +325,50 @@ class ProcessDetails extends React.Component {
         });
       });
   }
+
+  updateProcessAction(action, successCallback) {
+    if (!this.state.data.id) return;
+
+    axios.patch("/api/processes/" + this.state.data.id + "/action", { action: action },
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+      .then((res) => {
+        if (res.status === 200) {
+          this.setState({
+            notification: {
+              ...this.state.notification,
+              display: true,
+              severity: "success",
+              message: "Alterações salvas com sucesso.",
+            },
+          });
+          successCallback();
+        } else {
+          this.setState({
+            notification: {
+              ...this.state.notification,
+              display: true,
+              severity: "danger",
+              message: "Falha ao salvar alterações, tente novamente.",
+            },
+          });
+        }
+      })
+      .catch((err) => {
+        this.setState({
+          notification: {
+            ...this.state.notification,
+            display: true,
+            severity: "danger",
+            message: "Falha ao salvar alterações, tente novamente.",
+          },
+        });
+      });
+  }
+
 
   searchContracts(
     offset = 0,
@@ -561,69 +607,6 @@ class ProcessDetails extends React.Component {
   }
 
 
-  searchAction(companyId) {
-    if (
-      !companyId &&
-      !this.state.actionSearch.query.companyId &&
-      !this.props.account.companyId
-    ) {
-      return;
-    }
-
-    const params = {
-      offset: 0,
-      limit: 5,
-      sortBy: "created_at",
-      sortDirection: "desc",
-      companyId:
-        companyId ||
-        this.state.actionSearch.query.companyId ||
-        this.props.account.companyId,
-    };
-
-    if (
-      this.state.actionSearch.query.name &&
-      this.state.actionSearch.query.name.trim().length > 0
-    ) {
-      params.name = this.state.actionSearch.query.name;
-    }
-
-    axios
-      .get("/api/lawyers", {
-        headers: {
-          Accept: "application/json",
-        },
-        params,
-      })
-      .then((res) => {
-        this.setState({
-          actionSearch: {
-            ...this.state.actionSearch,
-            data: {
-              ...this.state.actionSearch.data,
-              limit: res.data.limit,
-              offset: res.data.offset,
-              sortBy: res.data.sortBy,
-              sortDirection: res.data.sortDirection,
-              total: res.data.total,
-              lawyers: res.data.data || [],
-            },
-          },
-        });
-      })
-      .catch((err) => {
-        this.setState({
-          notification: {
-            ...this.state.notification,
-            display: true,
-            severity: "danger",
-            message: "Falha ao buscar ações, tente novamente.",
-          },
-        });
-      });
-  }
-
-
   render() {
     return (
       <div>
@@ -753,75 +736,115 @@ class ProcessDetails extends React.Component {
 
 
 
-        <Dialog fullWidth maxWidth="md" open={this.state.actionSearch.display} onClose={() => { this.setState({ actionSearch: { ...this.state.actionSearch, display: false } }); }}>
-          <DialogTitle>Adicionar advogado ao processo</DialogTitle>
+        <Dialog
+          open={this.state.actionSearch.display}
+          onClose={() => { this.setState({ actionSearch: { ...this.state.actionSearch, display: false } }); }}>
+          <DialogTitle>Alterar ação do processo</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              <p>Selecione abaixo os advogados que gostaria de adicionar ao processo.</p>
-              <GridContainer>
-
-                <GridItem sm={12} md={4}>
-                  <CustomInput formControlProps={{ fullWidth: true }}
-                    inputProps={{
-                      placeholder: "Nome",
-                      onKeyPress: (e) => {
-                        if (e.key === "Enter") {
-                          this.searchAction();
-                        }
-                      },
-                      onChange: (e) => {
-                        this.setState({ actionSearch: { ...this.state.actionSearch, query: { ...this.state.actionSearch.query, name: e.target.value } } })
-                      },
-                      value: this.state.actionSearch.query.name
-                    }} />
-                </GridItem>
-
-                <GridItem sm={12} md={6}>
-                  <CompanySelect labelText="Unidade" inputProps={{
-                    onChange: (e) => {
-                      this.setState({ actionSearch: { ...this.state.actionSearch, query: { ...this.state.actionSearch.query, companyId: e.target.value } } }); this.searchAction(e.target.value);
-                    },
-                    value: this.state.actionSearch.query.companyId
-                  }} />
-                </GridItem>
-
-                <GridItem sm={12} md={2}>
-                  <CustomInput>
-                    <Button color="primary" justIcon round onClick={(e) => this.searchAction()} >
-                      <SearchIcon />
-                    </Button>
-                  </CustomInput>
-                </GridItem>
-              </GridContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell style={{ textAlign: "center", width: "80%" }}>Nome</TableCell>
-                    <TableCell>Ações</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {this.state.actionSearch.data && this.state.actionSearch.data.lawyers && this.state.actionSearch.data.lawyers.length > 0 &&
-                    this.state.actionSearch.data.lawyers
-                      .filter(el => !this.state.data.otherLawyersNameById || Object.keys(this.state.data.otherLawyersNameById).indexOf(el.accountId) < 0)
-                      .map((prop, key) => (
-                        <TableRow key={key}>
-                          <TableCell style={{ padding: "5px 16px", width: "80%" }} >{prop.name}</TableCell>
-                          <TableCell style={{ textAlign: "center" }}>
-                            <Tooltip title="Selecionar" arrow>
-                              <span>
-                                <Button justIcon round color="transparent" onClick={(e) => this.addOtherLawyer(prop.accountId)} >
-                                  <CheckIcon />
-                                </Button>
-                              </span>
-                            </Tooltip>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                </TableBody>
-              </Table>
-
+              <p>Selecione abaixo a ação que gostaria de vincular ao processo.</p>
             </DialogContentText>
+
+            <GridContainer>
+              <GridItem sm={12} md={12} lg={12}>
+                <CustomInput formControlProps={{ fullWidth: true }}
+                  inputProps={{
+                    placeholder: "Nome",
+                    onChange: (e) => {
+                      this.setState({ actionSearch: { ...this.state.actionSearch, query: { ...this.state.actionSearch.query, name: e.target.value } } })
+                    },
+                    value: this.state.actionSearch.query.name
+                  }} />
+              </GridItem>
+            </GridContainer>
+
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell style={{ textAlign: "center", width: "80%" }}>Nome</TableCell>
+                  <TableCell>Ações</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {this.props.processActions && this.props.processActions.data && this.props.processActions.data.length > 0 && this.props.processActions.data
+                  .filter(el => this.state.actionSearch.query.name.trim().length == 0 || el.name.toLowerCase().search(this.state.actionSearch.query.name.toLowerCase().trim()) != -1)
+                  .slice(this.state.actionSearch.pagination.offset, this.state.actionSearch.pagination.offset + this.state.actionSearch.pagination.limit)
+                  .map((prop, key) => (
+                    <TableRow key={key}>
+                      <TableCell style={{ padding: "5px 16px", width: "80%" }} >{prop.name}</TableCell>
+                      <TableCell style={{ textAlign: "center" }}>
+                        <Tooltip title="Selecionar" arrow>
+                          <span>
+                            <Button justIcon round color="transparent" onClick={(e) => {
+                              this.updateProcessAction(prop.name, () => {
+                                this.setState({
+                                  actionSearch: {
+                                    ...this.state.actionSearch, display: false,
+                                    query: { ...this.state.actionSearch.query, name: "" },
+                                    pagination: { ...this.state.actionSearch.pagination, offset: 0 }
+                                  }
+                                })
+                              });
+                              setTimeout(this.loadProcess.bind(this), 600);
+                            }} >
+                              <CheckIcon />
+                            </Button>
+                          </span>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+            <GridContainer>
+              <GridItem xs={12} sm={1} md={2} lg={3}></GridItem>
+              <GridItem xs={10} sm={11} md={12} lg={9}>
+                <GridContainer>
+                  <GridItem sm={12} style={{ textAlign: "right" }}>
+                    <div style={{ display: "inline-flex" }}>
+
+                      <Tooltip title="Início" arrow>
+                        <div>
+                          <Button justIcon round color="transparent"
+                            disabled={this.state.actionSearch.pagination.offset == 0}
+                            onClick={e => this.setState({ actionSearch: { ...this.state.actionSearch, pagination: { ...this.state.actionSearch.pagination, offset: 0 } } })}>
+                            <SkipPreviousIcon /></Button>
+                        </div>
+                      </Tooltip>
+                      <Tooltip title="Anterior" arrow>
+                        <div>
+                          <Button justIcon round color="transparent"
+                            disabled={this.state.actionSearch.pagination.offset == 0}
+                            onClick={e => this.setState({ actionSearch: { ...this.state.actionSearch, pagination: { ...this.state.actionSearch.pagination, offset: this.state.actionSearch.pagination.offset - this.state.actionSearch.pagination.limit } } })}>
+                            <NavigateBeforeIcon /></Button>
+                        </div>
+                      </Tooltip>
+
+                      <p>Exibindo {Math.min(this.state.actionSearch.pagination.total, this.state.actionSearch.pagination.offset + this.state.actionSearch.pagination.limit)} de {this.state.actionSearch.pagination.total}</p>
+
+                      <Tooltip title="Próxima" arrow>
+                        <div>
+                          <Button justIcon round color="transparent"
+                            disabled={this.state.actionSearch.pagination.offset + this.state.actionSearch.pagination.limit >= this.state.actionSearch.pagination.total}
+                            onClick={e => this.setState({ actionSearch: { ...this.state.actionSearch, pagination: { ...this.state.actionSearch.pagination, offset: this.state.actionSearch.pagination.offset + this.state.actionSearch.pagination.limit } } })}>
+                            <NavigateNextIcon /></Button>
+                        </div>
+                      </Tooltip>
+
+                      <Tooltip title="Última" arrow>
+                        <div>
+                          <Button justIcon round color="transparent"
+                            disabled={this.state.actionSearch.pagination.offset + this.state.actionSearch.pagination.limit >= this.state.actionSearch.pagination.total}
+                            onClick={e => this.setState({ actionSearch: { ...this.state.actionSearch, pagination: { ...this.state.actionSearch.pagination, offset: this.state.actionSearch.pagination.total - this.state.actionSearch.pagination.limit } } })}>
+                            <SkipNextIcon /></Button>
+                        </div>
+                      </Tooltip>
+
+                    </div>
+                  </GridItem>
+                </GridContainer>
+              </GridItem>
+            </GridContainer>
           </DialogContent>
           <DialogActions>
             <Button autoFocus color="transparent" onClick={e => this.setState({ actionSearch: { ...this.state.actionSearch, display: false } })}>
@@ -867,10 +890,10 @@ class ProcessDetails extends React.Component {
                       <span style={{ fontWeight: "bold", marginLeft: "10px" }}>
                         {!this.state.editing.processCode && this.state.data.code}
                         {!this.state.editing.processCode && !this.state.data.code && <span style={{ fontStyle: "italic", color: "grey", fontWeight: "lighter", margin: "0 10px" }}>vazio</span>}
-                        {this.state.editing.processCode && <div style={{ display: "inline" }}>
+                        {this.state.editing.processCode && <div style={{ display: "inline-flex", width: "50%" }}>
 
-                          <Input
-                            inputProps={{ style: { padding: "0" } }}
+                          <Input fullWidth
+                            inputProps={{ style: { padding: "0 0 6px 0" } }}
                             value={this.state.data.code}
                             onChange={(e) => this.setState({ data: { ...this.state.data, code: e.target.value } })}
                           />
@@ -994,7 +1017,19 @@ class ProcessDetails extends React.Component {
                         {this.state.data.action}
                       </span>
                       <Tooltip arrow title="Alterar Ação">
-                        <EditIcon fontSize="small" style={{ marginLeft: "5px", cursor: "pointer", opacity: "0.8" }} onClick={e => e.preventDefault()} />
+                        <EditIcon fontSize="small" style={{ marginLeft: "5px", cursor: "pointer", opacity: "0.8" }} onClick={e => {
+                          this.props.fetchProcessActions((actions) => this.setState({
+                            actionSearch: {
+                              ...this.state.actionSearch,
+                              display: true,
+                              pagination: {
+                                ...this.state.actionSearch.pagination,
+                                total: actions.total
+                              }
+                            }
+                          }));
+
+                        }} />
                       </Tooltip>
                     </CustomInput>
                   </GridItem>
