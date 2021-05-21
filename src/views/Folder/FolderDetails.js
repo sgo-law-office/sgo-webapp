@@ -243,9 +243,9 @@ class FolderDetails extends React.Component {
     axios
       .patch(
         "/api/folders/" +
-          this.state.data.id +
-          "/status/" +
-          (this.state.data.status === "OPEN" ? "ARCHIVED" : "OPEN"),
+        this.state.data.id +
+        "/status/" +
+        (this.state.data.status === "OPEN" ? "ARCHIVED" : "OPEN"),
         {
           headers: {
             Accept: "application/json",
@@ -525,6 +525,63 @@ class FolderDetails extends React.Component {
                           }[this.state.data.status]
                         }
                       </span>
+                      {this.state.data.id && (
+                        <Button
+                          color={this.state.data.status === "OPEN" ? "danger" : "warning"}
+                          style={{
+                            padding: "8px 10px",
+                            marginLeft: "10px",
+                            marginTop: "-4px",
+                            marginBottom: "-5px",
+                            opacity: "0.8"
+                          }}
+                          onClick={(e) => {
+                            this.setState({
+                              dialog: {
+                                title: "Deseja continuar?",
+                                fullWidth: false,
+                                display: true,
+                                message:
+                                  this.state.data.status === "OPEN"
+                                    ? "Cuidado! Uma pasta arquivada não estará disponível para ações em outras partes do sistema."
+                                    : "Pastas abertas estarão disponíveis para ações em outras parte do sistema.",
+                                actions: [
+                                  {
+                                    text: "Cancelar",
+                                    color: "transparent",
+                                    autoFocus: true,
+                                    callback: () => {
+                                      this.setState({
+                                        dialog: {
+                                          ...this.state.dialog,
+                                          display: false,
+                                        },
+                                      });
+                                    },
+                                  },
+                                  {
+                                    text: "Estou ciente e quero continuar",
+                                    color: "danger",
+                                    callback: () => {
+                                      this.toggleStatus();
+                                      this.setState({
+                                        dialog: {
+                                          ...this.state.dialog,
+                                          display: false,
+                                        },
+                                      });
+                                    },
+                                  },
+                                ],
+                              },
+                            });
+                          }}
+                        >
+                          {this.state.data.status === "OPEN"
+                            ? "Arquivar Pasta"
+                            : "Reabrir pasta"}
+                        </Button>
+                      )}
                     </CustomInput>
                   </GridItem>
 
@@ -544,78 +601,9 @@ class FolderDetails extends React.Component {
                     </CustomInput>
                   </GridItem>
 
-                  <GridItem xs={12} sm={12} md={6} lg={4}>
-                    <CustomInput formControlProps={{ fullWidth: true }}>
-                      <span>Criado em</span>
-                      <Tooltip
-                        arrow
-                        title={moment(this.state.data.createdAt).format(
-                          "DD/MM/YYYY HH:mm"
-                        )}
-                      >
-                        <span
-                          style={{ fontWeight: "bold", marginLeft: "10px" }}
-                        >
-                          <Moment
-                            date={this.state.data.createdAt}
-                            format="DD [de] MMMM [de] YYYY"
-                          />
-                        </span>
-                      </Tooltip>
-                    </CustomInput>
-                  </GridItem>
-
-                  <GridItem xs={12} sm={12} md={6} lg={8}>
-                    <CustomInput formControlProps={{ fullWidth: true }}>
-                      <span>Criado por</span>
-                      <span style={{ fontWeight: "bold", marginLeft: "10px" }}>
-                        {this.state.data.createdByName}
-                      </span>
-                    </CustomInput>
-                  </GridItem>
-
-                  {this.state.data.lastUpdatedAt && (
-                    <GridItem xs={12} sm={12} md={6} lg={4}>
-                      <CustomInput formControlProps={{ fullWidth: true }}>
-                        <span>Ultima vez atualizado em</span>
-                        <Tooltip
-                          arrow
-                          title={moment(this.state.data.lastUpdatedAt).format(
-                            "DD/MM/YYYY HH:mm"
-                          )}
-                        >
-                          <span
-                            style={{ fontWeight: "bold", marginLeft: "10px" }}
-                          >
-                            <Moment
-                              date={this.state.data.lastUpdatedAt}
-                              format="DD [de] MMMM [de] YYYY"
-                            />
-                          </span>
-                        </Tooltip>
-                      </CustomInput>
-                    </GridItem>
-                  )}
-
-                  {this.state.data.lastUpdatedAt && (
-                    <GridItem xs={12} sm={12} md={6} lg={8}>
-                      <CustomInput formControlProps={{ fullWidth: true }}>
-                        <span>Ultima vez atualizado por</span>
-                        <span
-                          style={{ fontWeight: "bold", marginLeft: "10px" }}
-                        >
-                          {this.state.data.lastUpdatedByName}
-                        </span>
-                      </CustomInput>
-                    </GridItem>
-                  )}
 
                   <GridItem xs={12} sm={12} md={12} lg={12}>
-                    <CustomInput
-                      textarea
-                      labelText="Observações"
-                      formControlProps={{ fullWidth: true }}
-                      labelProps={{ shrink: true }}
+                    <CustomInput textarea labelText="Observações" formControlProps={{ fullWidth: true }} labelProps={{ shrink: true }}
                       inputProps={{
                         rows: 5,
                         value: this.state.data.notes,
@@ -638,6 +626,57 @@ class FolderDetails extends React.Component {
                       </Button>
                     </GridItem>
                   )}
+
+
+                  <GridItem xs={12} sm={12} md={12} lg={12} style={{ marginTop: "15px" }}>
+                    <Divider fullWidth />
+                  </GridItem>
+
+
+                  <GridItem xs={12} sm={12} md={6} lg={3}>
+                    <CustomInput formControlProps={{ fullWidth: true }}>
+                      <span>Criado em</span>
+                      <Tooltip arrow title={moment(this.state.data.createdAt).format("DD/MM/YYYY HH:mm")}>
+                        <span style={{ fontWeight: "bold", marginLeft: "10px" }} >
+                          <Moment date={this.state.data.createdAt} format="DD [de] MMMM [de] YYYY" />
+                        </span>
+                      </Tooltip>
+                    </CustomInput>
+                  </GridItem>
+
+                  <GridItem xs={12} sm={12} md={6} lg={3}>
+                    <CustomInput formControlProps={{ fullWidth: true }}>
+                      <span>Criado por</span>
+                      <span style={{ fontWeight: "bold", marginLeft: "10px" }}>
+                        {this.state.data.createdByName}
+                      </span>
+                    </CustomInput>
+                  </GridItem>
+
+                  {this.state.data.lastUpdatedAt && (
+                    <GridItem xs={12} sm={12} md={6} lg={3}>
+                      <CustomInput formControlProps={{ fullWidth: true }}>
+                        <span>Ultima vez atualizado em</span>
+                        <Tooltip arrow title={moment(this.state.data.lastUpdatedAt).format("DD/MM/YYYY HH:mm")} >
+                          <span style={{ fontWeight: "bold", marginLeft: "10px" }} >
+                            <Moment date={this.state.data.lastUpdatedAt} format="DD [de] MMMM [de] YYYY" />
+                          </span>
+                        </Tooltip>
+                      </CustomInput>
+                    </GridItem>
+                  )}
+
+                  {this.state.data.lastUpdatedAt && (
+                    <GridItem xs={12} sm={12} md={6} lg={3}>
+                      <CustomInput formControlProps={{ fullWidth: true }}>
+                        <span>Ultima vez atualizado por</span>
+                        <span style={{ fontWeight: "bold", marginLeft: "10px" }} >
+                          {this.state.data.lastUpdatedByName}
+                        </span>
+                      </CustomInput>
+                    </GridItem>
+                  )}
+
                 </GridContainer>
               </CardBody>
             </Card>
@@ -658,18 +697,12 @@ class FolderDetails extends React.Component {
                     }
                   />
                   <Tab
-                    label={
-                      this.state.files.init
-                        ? "Arquivos (" +
-                          (this.state.files.data.total || 0) +
-                          ")"
-                        : "Arquivos"
-                    }
+                    label={this.state.files.init ? "Arquivos (" + (this.state.files.data.total || "0") + ")" : "Arquivos "}
                     onClick={(e) => {
-                      // if (!this.state.files.init) {
-                      //     this.searchFiles();
-                      // }
-                      // this.setState({ files: { ...this.state.files, init: true } });
+                      if (!this.state.files.init) {
+                        //this.searchFiles();
+                      }
+                      this.setState({ files: { ...this.state.files, init: true } });
                     }}
                   />
                 </Tabs>
@@ -712,210 +745,189 @@ class FolderDetails extends React.Component {
 
                         {!this.state.contracts.err &&
                           !this.state.contracts.loading && (
-                            <Table>
-                              <TableHead>
-                                <TableRow>
-                                  <TableCell
-                                    style={{
-                                      textAlign: "center",
-                                      width: "40%",
-                                    }}
-                                  >
-                                    Nome do advogado
-                                    <div
+                            <div>
+                              <Table>
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell
                                       style={{
-                                        display: "inline",
-                                        verticalAlign: "top",
-                                        padding: "0 5px",
+                                        textAlign: "center",
+                                        width: "40%",
                                       }}
                                     >
-                                      <a href="#">
-                                        {(this.state.contracts.data.sortBy !==
-                                          "lawyer_name" ||
-                                          this.state.contracts.data
-                                            .sortDirection === "desc") && (
-                                          <ArrowDropDownIcon
-                                            color={
-                                              this.state.contracts.data
-                                                .sortBy === "name"
-                                                ? ""
-                                                : "disabled"
-                                            }
-                                            onClick={(e) => {
-                                              this.searchContracts(
-                                                undefined,
-                                                undefined,
-                                                "lawyer_name",
-                                                "asc"
-                                              );
-                                            }}
-                                          />
-                                        )}
-
-                                        {this.state.contracts.data.sortBy ===
-                                          "lawyer_name" &&
-                                          this.state.contracts.data
-                                            .sortDirection === "asc" && (
-                                            <ArrowDropUpIcon
-                                              color={
-                                                this.state.contracts.data
-                                                  .sortBy === "name"
-                                                  ? ""
-                                                  : "disabled"
-                                              }
-                                              onClick={(e) => {
-                                                this.searchContracts(
-                                                  undefined,
-                                                  undefined,
-                                                  "lawyer_name",
-                                                  "desc"
-                                                );
-                                              }}
-                                            />
-                                          )}
-                                      </a>
-                                    </div>
-                                  </TableCell>
-
-                                  <TableCell style={{ textAlign: "center" }}>
-                                    Status
-                                  </TableCell>
-
-                                  <TableCell style={{ textAlign: "center" }}>
-                                    Criado em
+                                      Nome do advogado
                                     <div
-                                      style={{
-                                        display: "inline",
-                                        verticalAlign: "top",
-                                        padding: "0 5px",
-                                      }}
-                                    >
-                                      <a href="#">
-                                        {(this.state.contracts.data.sortBy !==
-                                          "created_at" ||
-                                          this.state.contracts.data
-                                            .sortDirection === "desc") && (
-                                          <ArrowDropDownIcon
-                                            color={
-                                              this.state.contracts.data
-                                                .sortBy === "created_at"
-                                                ? ""
-                                                : "disabled"
-                                            }
-                                            onClick={(e) => {
-                                              this.searchContracts(
-                                                undefined,
-                                                undefined,
-                                                "created_at",
-                                                "asc"
-                                              );
-                                            }}
-                                          />
-                                        )}
+                                        style={{
+                                          display: "inline",
+                                          verticalAlign: "top",
+                                          padding: "0 5px",
+                                        }}
+                                      >
+                                        <a href="#">
+                                          {(this.state.contracts.data.sortBy !==
+                                            "lawyer_name" ||
+                                            this.state.contracts.data
+                                              .sortDirection === "desc") && (
+                                              <ArrowDropDownIcon
+                                                color={
+                                                  this.state.contracts.data
+                                                    .sortBy === "name"
+                                                    ? ""
+                                                    : "disabled"
+                                                }
+                                                onClick={(e) => {
+                                                  this.searchContracts(
+                                                    undefined,
+                                                    undefined,
+                                                    "lawyer_name",
+                                                    "asc"
+                                                  );
+                                                }}
+                                              />
+                                            )}
 
-                                        {this.state.contracts.data.sortBy ===
-                                          "created_at" &&
-                                          this.state.contracts.data
-                                            .sortDirection === "asc" && (
-                                            <ArrowDropUpIcon
-                                              color={
-                                                this.state.contracts.data
-                                                  .sortBy === "created_at"
-                                                  ? ""
-                                                  : "disabled"
-                                              }
-                                              onClick={(e) => {
-                                                this.searchContracts(
-                                                  undefined,
-                                                  undefined,
-                                                  "created_at",
-                                                  "desc"
-                                                );
-                                              }}
-                                            />
-                                          )}
-                                      </a>
-                                    </div>
+                                          {this.state.contracts.data.sortBy ===
+                                            "lawyer_name" &&
+                                            this.state.contracts.data
+                                              .sortDirection === "asc" && (
+                                              <ArrowDropUpIcon
+                                                color={
+                                                  this.state.contracts.data
+                                                    .sortBy === "name"
+                                                    ? ""
+                                                    : "disabled"
+                                                }
+                                                onClick={(e) => {
+                                                  this.searchContracts(
+                                                    undefined,
+                                                    undefined,
+                                                    "lawyer_name",
+                                                    "desc"
+                                                  );
+                                                }}
+                                              />
+                                            )}
+                                        </a>
+                                      </div>
+                                    </TableCell>
+
+                                    <TableCell style={{ textAlign: "center" }}>
+                                      Status
                                   </TableCell>
 
-                                  <TableCell style={{ textAlign: "center" }}>
-                                    Ações
-                                  </TableCell>
-                                </TableRow>
-                              </TableHead>
+                                    <TableCell style={{ textAlign: "center" }}>
+                                      Criado em
+                                    <div
+                                        style={{
+                                          display: "inline",
+                                          verticalAlign: "top",
+                                          padding: "0 5px",
+                                        }}
+                                      >
+                                        <a href="#">
+                                          {(this.state.contracts.data.sortBy !==
+                                            "created_at" ||
+                                            this.state.contracts.data
+                                              .sortDirection === "desc") && (
+                                              <ArrowDropDownIcon
+                                                color={
+                                                  this.state.contracts.data
+                                                    .sortBy === "created_at"
+                                                    ? ""
+                                                    : "disabled"
+                                                }
+                                                onClick={(e) => {
+                                                  this.searchContracts(
+                                                    undefined,
+                                                    undefined,
+                                                    "created_at",
+                                                    "asc"
+                                                  );
+                                                }}
+                                              />
+                                            )}
 
-                              <TableBody>
-                                {this.state.contracts.data.contracts &&
-                                  this.state.contracts.data.contracts.length >
+                                          {this.state.contracts.data.sortBy ===
+                                            "created_at" &&
+                                            this.state.contracts.data
+                                              .sortDirection === "asc" && (
+                                              <ArrowDropUpIcon
+                                                color={
+                                                  this.state.contracts.data
+                                                    .sortBy === "created_at"
+                                                    ? ""
+                                                    : "disabled"
+                                                }
+                                                onClick={(e) => {
+                                                  this.searchContracts(
+                                                    undefined,
+                                                    undefined,
+                                                    "created_at",
+                                                    "desc"
+                                                  );
+                                                }}
+                                              />
+                                            )}
+                                        </a>
+                                      </div>
+                                    </TableCell>
+
+                                    <TableCell style={{ textAlign: "center" }}>
+                                      Ações
+                                  </TableCell>
+                                  </TableRow>
+                                </TableHead>
+
+                                <TableBody>
+                                  {this.state.contracts.data.contracts &&
+                                    this.state.contracts.data.contracts.length >
                                     0 &&
-                                  this.state.contracts.data.contracts.map(
-                                    (prop, key) => {
-                                      return (
-                                        <TableRow key={key}>
-                                          <TableCell
-                                            style={{
-                                              padding: "5px 16px",
-                                              width: "40%",
-                                            }}
-                                          >
-                                            {prop.lawyerName}
-                                          </TableCell>
+                                    this.state.contracts.data.contracts.map(
+                                      (prop, key) => {
+                                        return (
+                                          <TableRow key={key}>
+                                            <TableCell
+                                              style={{
+                                                padding: "5px 16px",
+                                                width: "40%",
+                                              }}
+                                            >
+                                              {prop.lawyerName}
+                                            </TableCell>
 
-                                          <TableCell
-                                            style={{
-                                              padding: "5px 16px",
-                                              textAlign: "center",
-                                            }}
-                                          >
-                                            {
+                                            <TableCell
+                                              style={{
+                                                padding: "5px 16px",
+                                                textAlign: "center",
+                                              }}
+                                            >
                                               {
-                                                CURRENT: "Vigente",
-                                                FILED: "Arquivado",
-                                              }[prop.status]
-                                            }
-                                          </TableCell>
+                                                {
+                                                  CURRENT: "Vigente",
+                                                  FILED: "Arquivado",
+                                                }[prop.status]
+                                              }
+                                            </TableCell>
 
-                                          <TableCell
-                                            style={{
-                                              padding: "5px 16px",
-                                              textAlign: "center",
-                                            }}
-                                          >
-                                            <Moment
-                                              date={prop.createdAt}
-                                              format="DD/MM/YYYY"
-                                            />
-                                          </TableCell>
+                                            <TableCell
+                                              style={{
+                                                padding: "5px 16px",
+                                                textAlign: "center",
+                                              }}
+                                            >
+                                              <Moment
+                                                date={prop.createdAt}
+                                                format="DD/MM/YYYY"
+                                              />
+                                            </TableCell>
 
-                                          <TableCell
-                                            style={{
-                                              padding: "5px 16px",
-                                              textAlign: "center",
-                                            }}
-                                          >
-                                            <Tooltip title="Detalhes" arrow>
-                                              <span>
-                                                <Button
-                                                  justIcon
-                                                  round
-                                                  color="transparent"
-                                                  onClick={(e) =>
-                                                    this.props.history.push(
-                                                      "/admin/contracts/" +
-                                                        prop.id
-                                                    )
-                                                  }
-                                                >
-                                                  <DescriptionOutlinedIcon />
-                                                </Button>
-                                              </span>
-                                            </Tooltip>
-
-                                            {prop.attendanceId && (
-                                              <Tooltip
-                                                title="Atendimento"
-                                                arrow
-                                              >
+                                            <TableCell
+                                              style={{
+                                                padding: "5px 16px",
+                                                textAlign: "center",
+                                              }}
+                                            >
+                                              <Tooltip title="Detalhes" arrow>
                                                 <span>
                                                   <Button
                                                     justIcon
@@ -923,24 +935,47 @@ class FolderDetails extends React.Component {
                                                     color="transparent"
                                                     onClick={(e) =>
                                                       this.props.history.push(
-                                                        "/admin/attendances/" +
-                                                          prop.attendanceId
+                                                        "/admin/contracts/" +
+                                                        prop.id
                                                       )
                                                     }
                                                   >
-                                                    <AssignmentOutlinedIcon />
+                                                    <DescriptionOutlinedIcon />
                                                   </Button>
                                                 </span>
                                               </Tooltip>
-                                            )}
-                                          </TableCell>
-                                        </TableRow>
-                                      );
-                                    }
-                                  )}
-                              </TableBody>
-                            </Table>
-                          )}
+
+                                              {prop.attendanceId && (
+                                                <Tooltip
+                                                  title="Atendimento"
+                                                  arrow
+                                                >
+                                                  <span>
+                                                    <Button
+                                                      justIcon
+                                                      round
+                                                      color="transparent"
+                                                      onClick={(e) =>
+                                                        this.props.history.push(
+                                                          "/admin/attendances/" +
+                                                          prop.attendanceId
+                                                        )
+                                                      }
+                                                    >
+                                                      <AssignmentOutlinedIcon />
+                                                    </Button>
+                                                  </span>
+                                                </Tooltip>
+                                              )}
+                                            </TableCell>
+                                          </TableRow>
+                                        );
+                                      }
+                                    )}
+                                </TableBody>
+                              </Table>
+                              {this.state.contracts.data.contracts && this.state.contracts.data.contracts.length === 0 && <h5 style={{ textAlign: "center" }}>Nenhum contrato encontrado.</h5>}
+                            </div>)}
 
                         <GridContainer>
                           <GridItem sm={12} style={{ textAlign: "right" }}>
@@ -972,7 +1007,7 @@ class FolderDetails extends React.Component {
                                     onClick={(e) =>
                                       this.searchContracts(
                                         this.state.contracts.data.offset -
-                                          this.state.contracts.data.limit
+                                        this.state.contracts.data.limit
                                       )
                                     }
                                   >
@@ -986,7 +1021,7 @@ class FolderDetails extends React.Component {
                                 {Math.min(
                                   this.state.contracts.data.total,
                                   this.state.contracts.data.offset +
-                                    this.state.contracts.data.limit
+                                  this.state.contracts.data.limit
                                 )}{" "}
                                 de {this.state.contracts.data.total}
                               </p>
@@ -999,13 +1034,13 @@ class FolderDetails extends React.Component {
                                     color="transparent"
                                     disabled={
                                       this.state.contracts.data.offset +
-                                        this.state.contracts.data.limit >=
+                                      this.state.contracts.data.limit >=
                                       this.state.contracts.data.total
                                     }
                                     onClick={(e) =>
                                       this.searchContracts(
                                         this.state.contracts.data.offset +
-                                          this.state.contracts.data.limit
+                                        this.state.contracts.data.limit
                                       )
                                     }
                                   >
@@ -1022,13 +1057,13 @@ class FolderDetails extends React.Component {
                                     color="transparent"
                                     disabled={
                                       this.state.contracts.data.offset +
-                                        this.state.contracts.data.limit >=
+                                      this.state.contracts.data.limit >=
                                       this.state.contracts.data.total
                                     }
                                     onClick={(e) =>
                                       this.searchContracts(
                                         this.state.contracts.data.total -
-                                          this.state.contracts.data.limit
+                                        this.state.contracts.data.limit
                                       )
                                     }
                                   >
@@ -1042,14 +1077,8 @@ class FolderDetails extends React.Component {
                       </GridItem>
 
                       <GridItem xs={12} sm={6} md={12} lg={12}>
-                        <Button
-                          color="success"
-                          onClick={(e) =>
-                            this.props.history.push("/admin/contracts/create")
-                          }
-                        >
-                          Adicionar novo contrato
-                        </Button>
+                        <Button color="success" onClick={(e) => { /* todo */ }}>Vincular contrato</Button>
+                        <Button color="success" onClick={(e) => this.props.history.push("/admin/contracts/create")}>Novo contrato</Button>
                       </GridItem>
                     </GridContainer>
                   )}
@@ -1109,56 +1138,6 @@ class FolderDetails extends React.Component {
             </Card>
 
             <Button onClick={(e) => this.props.history.goBack()}>Voltar</Button>
-            {this.state.data.id && (
-              <Button
-                color={this.state.data.status === "OPEN" ? "danger" : "warning"}
-                onClick={(e) => {
-                  this.setState({
-                    dialog: {
-                      title: "Deseja continuar?",
-                      fullWidth: false,
-                      display: true,
-                      message:
-                        this.state.data.status === "OPEN"
-                          ? "Cuidado! Uma pasta arquivada não estará disponível para ações em outras partes do sistema."
-                          : "Pastas abertas estarão disponíveis para ações em outras parte do sistema.",
-                      actions: [
-                        {
-                          text: "Cancelar",
-                          color: "transparent",
-                          autoFocus: true,
-                          callback: () => {
-                            this.setState({
-                              dialog: {
-                                ...this.state.dialog,
-                                display: false,
-                              },
-                            });
-                          },
-                        },
-                        {
-                          text: "Estou ciente e quero continuar",
-                          color: "danger",
-                          callback: () => {
-                            this.toggleStatus();
-                            this.setState({
-                              dialog: {
-                                ...this.state.dialog,
-                                display: false,
-                              },
-                            });
-                          },
-                        },
-                      ],
-                    },
-                  });
-                }}
-              >
-                {this.state.data.status === "OPEN"
-                  ? "Arquivar Pasta"
-                  : "Reabrir pasta"}
-              </Button>
-            )}
           </div>
         )}
       </div>

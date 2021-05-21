@@ -37,6 +37,9 @@ export const ERROR_FETCH_COURTS = "ERROR_FETCH_COURTS";
 export const SUCCESS_FETCH_PHONES = "SUCCESS_FETCH_PHONES";
 export const ERROR_FETCH_PHONES = "ERROR_FETCH_PHONES";
 
+export const SUCCESS_FETCH_PROCESS_ACTIONS = "SUCCESS_FETCH_PROCESS_ACTIONS";
+export const ERROR_FETCH_PROCESS_ACTIONS = "ERROR_FETCH_PROCESS_ACTIONS";
+
 export const SUCCESS_ACCOUNT_CREATE = "SUCCESS_ACCOUNT_CREATE";
 export const ERROR_ACCOUNT_CREATE = "ERROR_ACCOUNT_CREATE";
 
@@ -322,6 +325,50 @@ export const fetchPhones = (callback, force) => {
             .catch(err => {
                 dispatch({
                     type: ERROR_FETCH_PHONES,
+                    payload: err
+                });
+            });
+    }
+}
+
+
+export const fetchProcessActions = (callback, force) => {
+    console.log("FETCH PROCESS ACTIONS");
+    return (dispatch, getState) => {
+        if (!force && getState().common.data.lawyers) {
+            dispatch({
+                type: SUCCESS_FETCH_LAWYERS,
+                payload: getState().common.data.lawyers
+            });
+            if (callback) {
+                callback(getState().common.data.lawyers);
+            }
+            return;
+        }
+        axios.get("/api/process-actions", {
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+            .then(res => {
+                if (res.status == 200) {
+                    dispatch({
+                        type: SUCCESS_FETCH_PROCESS_ACTIONS,
+                        payload: res.data
+                    });
+                    if (callback) {
+                        callback(res.data);
+                    }
+                } else {
+                    dispatch({
+                        type: ERROR_FETCH_PROCESS_ACTIONS,
+                        payload: res.status
+                    })
+                }
+            })
+            .catch(err => {
+                dispatch({
+                    type: ERROR_FETCH_PROCESS_ACTIONS,
                     payload: err
                 });
             });

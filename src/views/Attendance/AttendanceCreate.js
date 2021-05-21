@@ -361,19 +361,12 @@ class AttendanceCreate extends React.Component {
                               <ElderTooltip birthDate={prop.birthDate} />
                             </TableCell>
                             <TableCell style={{ textAlign: "center" }}>
-                              <Tooltip title="Selecionar" arrow>
-                                <span>
-                                  <Button
-                                    justIcon
-                                    round
-                                    color="transparent"
-                                    onClick={(e) => this.selectCustomer(prop)}
-                                  >
-                                    <CheckIcon />
-                                  </Button>
-                                </span>
+                              <Tooltip arrow title="Selecionar">
+                              <span>
+                              <Button round justIcon color="success" onClick={(e) => this.selectCustomer(prop)}><CheckIcon /></Button>
+                              </span>
                               </Tooltip>
-                            </TableCell>
+                              </TableCell>
                           </TableRow>
                         );
                       }
@@ -383,15 +376,6 @@ class AttendanceCreate extends React.Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button
-              color="success"
-              style={{ float: "left" }}
-              onClick={() => {
-                this.props.history.push("/admin/customers/create");
-              }}
-            >
-              Adicionar Cliente
-            </Button>
             <Button
               color="transparent"
               autoFocus

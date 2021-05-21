@@ -10,7 +10,7 @@ import {
 
   SUCCESS_FETCH_LAWYERS, ERROR_FETCH_LAWYERS,
   SUCCESS_FETCH_COURTS, ERROR_FETCH_COURTS,
-  SUCCESS_FETCH_PHONES, ERROR_FETCH_PHONES
+  SUCCESS_FETCH_PHONES, ERROR_FETCH_PHONES, SUCCESS_FETCH_PROCESS_ACTIONS, ERROR_FETCH_PROCESS_ACTIONS
 
 } from './actions';
 
@@ -116,6 +116,18 @@ export default function (state = initialState, action) {
         }
       }
 
+    case SUCCESS_FETCH_PROCESS_ACTIONS:
+      return {
+        ...state,
+        common: {
+          ...state.common,
+          data: {
+            ...state.common.data,
+            processActions: action.payload
+          }
+        }
+      }
+
     case SUCCESS_FETCH_ACCOUNT:
     case SUCCESS_ACCOUNT_CREATE:
       return {
@@ -130,6 +142,7 @@ export default function (state = initialState, action) {
     case ERROR_FETCH_LAWYERS:
     case ERROR_FETCH_COURTS:
     case ERROR_FETCH_PHONES:
+    case ERROR_FETCH_PROCESS_ACTIONS:
     case ERROR_ACCOUNT_CREATE:
       return {
         ...state,

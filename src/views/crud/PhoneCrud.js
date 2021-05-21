@@ -258,7 +258,7 @@ class PhoneCrud extends React.Component {
         />
 
         <Dialog fullWidth maxWidth="sm" open={this.state.dialog.display} onClose={() => { this.setState({ dialog: { ...this.state.dialog, display: false } }) }}>
-          <DialogTitle>Adicionar telefone</DialogTitle>
+          <DialogTitle>{this.state.dialog.data.id ? "Alterar telefone" : "Adicionar telefone"}</DialogTitle>
           <DialogContent>
             <DialogContentText>
               <GridContainer>
@@ -353,7 +353,7 @@ class PhoneCrud extends React.Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            {this.state.dialog.data.id && <Button color="success" autoFocus onClick={() => this.updatePhone()}>Salvar Modificações</Button>}
+            {this.state.dialog.data.id && <Button color="warning" autoFocus onClick={() => this.updatePhone()}>Salvar Modificações</Button>}
             {!this.state.dialog.data.id && <Button color="success" autoFocus onClick={() => this.createPhone()}>Adicionar</Button>}
 
             <Button color="transparent" autoFocus onClick={() => { this.setState({ dialog: { ...this.state.dialog, display: false } }) }}>Cancelar</Button>

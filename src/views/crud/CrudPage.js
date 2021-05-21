@@ -5,6 +5,7 @@ import { Route, Switch, withRouter } from "react-router-dom";
 import CompanyCrud from "./CompanyCrud";
 import LawyerCrud from "./LawyerCrud";
 import CourtCrud from "./CourtCrud";
+import ProcessActionCrud from "./ProcessActionCrud";
 import PhoneCrud from "./PhoneCrud";
 
 
@@ -16,6 +17,7 @@ class CrudPage extends React.Component {
                 <Route path="/admin/registrations/companies" component={() => (<CompanyCrud />)}></Route>
                 <Route path="/admin/registrations/lawyers" component={() => (<LawyerCrud />)}></Route>
                 <Route path="/admin/registrations/courts" component={() => (<CourtCrud />)}></Route>
+                <Route path="/admin/registrations/process-actions" component={() => (<ProcessActionCrud />)}></Route>
                 <Route path="/admin/registrations/phones" component={() => (<PhoneCrud />)}></Route>
                 <Route path="/admin/registrations">
                     <div>
@@ -28,6 +30,7 @@ class CrudPage extends React.Component {
                                     <li><a href="/admin/registrations/companies" onClick={e => { e.preventDefault(); this.props.history.push("/admin/registrations/companies") }}>Unidades e Departamentos</a></li>
                                     <li><a href="/admin/registrations/lawyers" onClick={e => { e.preventDefault(); this.props.history.push("/admin/registrations/lawyers") }}>Advogados</a></li>
                                     <li><a href="/admin/registrations/courts" onClick={e => { e.preventDefault(); this.props.history.push("/admin/registrations/courts") }}>Varas</a></li>
+                                    <li><a href="/admin/registrations/process-actions" onClick={e => { e.preventDefault(); this.props.history.push("/admin/registrations/process-actions") }}>Ações de processos</a></li>
                                     <li><a href="/admin/registrations/phones" onClick={e => { e.preventDefault(); this.props.history.push("/admin/registrations/phones") }}>Telefones Úteis</a></li>
                                 </ul>
                             </GridItem>

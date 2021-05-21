@@ -16,6 +16,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  TextField,
   Tooltip,
 } from "@material-ui/core";
 import CustomInput from "components/CustomInput/CustomInput";
@@ -25,6 +26,12 @@ import SearchIcon from "@material-ui/icons/Search";
 
 import Button from "components/CustomButtons/Button";
 import Notification from "components/Notifications/Notification";
+
+import NavigateNextIcon from '@material-ui/icons/NavigateNext';
+import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
+import SkipNextIcon from '@material-ui/icons/SkipNext';
+import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
+
 
 import Axios from "axios";
 import {
@@ -39,6 +46,8 @@ import {
   loadingResponseInterceptor,
   loadingResponseInterceptorOnError,
 } from "components/Loading/interceptor";
+import { fetchCourts } from "store/actions";
+import { fetchProcessActions } from "store/actions";
 
 const axios = Axios.create();
 axios.interceptors.request.use(
@@ -59,19 +68,21 @@ axios.interceptors.response.use(
   loadingResponseInterceptorOnError
 );
 
-class ContractCreate extends React.Component {
+class ProcessCreate extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       data: {
-        attendanceId: null,
+        contractId: null,
         customerId: null,
         companyId: null,
         lawyerId: null,
-        folderId: null,
+        courtId: null,
         customerName: "",
         lawyerName: "",
-        folderCode: "",
+        courtName: "",
+        code: "",
+        action: ""
       },
 
       customerSearch: {
@@ -106,20 +117,24 @@ class ContractCreate extends React.Component {
         },
       },
 
-      folderSearch: {
+      courtSearch: {
         display: false,
         query: {
-          code: "",
-          companyId: null,
+          name: "",
         },
-        data: {
-          limit: 5,
+        pagination: {
           offset: 0,
-          total: 0,
-          sortBy: "created_by",
-          sortDirection: "desc",
-          folders: [],
+          limit: 10,
+          total: 0
         },
+      },
+
+      actionSearch: {
+        pagination: {
+          offset: 0,
+          limit: 10,
+          total: 0
+        }
       },
 
       currentStep: 0,
@@ -134,7 +149,7 @@ class ContractCreate extends React.Component {
 
   componentDidMount() {
     const query = new URLSearchParams(this.props.location.search);
-    const attendanceId = query.get("atendanceId");
+    const contractId = query.get("contractId");
 
     this.setState({
       data: {
@@ -143,9 +158,9 @@ class ContractCreate extends React.Component {
       },
     });
 
-    if (attendanceId) {
+    if (contractId) {
       axios
-        .get("/api/attendances/" + attendanceId, {
+        .get("/api/contracts/" + contractId + ":summary", {
           headers: {
             Accept: "application/json",
           },
@@ -154,11 +169,12 @@ class ContractCreate extends React.Component {
           this.setState({
             data: {
               ...this.state.data,
-              attendanceId: res.data.id,
+              contractId: res.data.id,
               customerId: res.data.customerId,
               companyId: res.data.companyId,
+              lawyerId: res.data.lawyerId,
             },
-            currentStep: 3,
+            currentStep: 4,
           });
           this.fetchCustomerName(res.data.customerId);
         })
@@ -169,7 +185,7 @@ class ContractCreate extends React.Component {
               display: true,
               severity: "warning",
               message:
-                "Falha ao buscar atendimento, recarregue a página para tentar novamente, ou prossiga com a criação e anexe o atendimento posteriormente.",
+                "Falha ao buscar contrato, recarregue a página para tentar novamente, ou prossiga com a criação e anexe o contrato posteriormente.",
             },
             currentStep: 1,
           });
@@ -211,22 +227,21 @@ class ContractCreate extends React.Component {
     }
   }
 
-  createContract() {
+  createProcess() {
     const { data } = this.state;
 
     if (
+      !data.code ||
       !data.companyId ||
       !data.customerId ||
-      !data.lawyerId ||
-      !data.folderId
+      !data.lawyerId
     ) {
       this.setState({
         notification: {
           ...this.state.notification,
           display: true,
           severity: "danger",
-          message:
-            "Falha ao criar contrato, recarregue a página para tentar novamente.",
+          message: "Falha ao criar processo, recarregue a página para tentar novamente.",
         },
       });
       return;
@@ -234,13 +249,15 @@ class ContractCreate extends React.Component {
 
     axios
       .post(
-        "/api/contracts",
+        "/api/processes",
         {
+          code: data.code,
           customerId: data.customerId,
           companyId: data.companyId,
           lawyerId: data.lawyerId,
-          folderId: data.folderId,
-          attendanceId: data.attendanceId,
+          courtId: data.courtId,
+          contractId: data.contractId,
+          action: data.action
         },
         {
           headers: {
@@ -250,14 +267,14 @@ class ContractCreate extends React.Component {
       )
       .then((res) => {
         if (res.status === 201) {
-          this.props.history.push("/admin/contracts/" + res.data.contract.id);
+          this.props.history.push("/admin/processes/" + res.data.id);
         } else {
           this.setState({
             notification: {
               ...this.state.notification,
               display: true,
               severity: "danger",
-              message: "Falha ao criar contrato, tente novamente.",
+              message: "Falha ao criar processo, tente novamente.",
             },
           });
         }
@@ -268,7 +285,7 @@ class ContractCreate extends React.Component {
             ...this.state.notification,
             display: true,
             severity: "danger",
-            message: "Falha ao criar contrato, tente novamente.",
+            message: "Falha ao criar processo, tente novamente.",
           },
         });
       });
@@ -431,90 +448,30 @@ class ContractCreate extends React.Component {
       });
   }
 
-  selectFolder(folder) {
-    if (folder.id) {
+  selectCourt(court) {
+    if (court.id) {
       this.setState({
         data: {
           ...this.state.data,
-          folderId: folder.id,
-          folderCode: folder.code,
+          courtId: court.id,
+          courtName: court.name,
         },
-        folderSearch: {
-          ...this.state.folderSearch,
-          display: false,
+        courtSearch: {
+          ...this.state.courtSearch,
+          display: false
         },
       });
     }
   }
 
-  searchFolder(companyId) {
-    if (
-      !this.state.data.customerId &&
-      !companyId &&
-      !this.state.folderSearch.query.companyId &&
-      !this.props.account.companyId
-    ) {
-      return;
-    }
-
-    const params = {
-      offset: 0,
-      limit: 5,
-      sortBy: "created_at",
-      sortDirection: "desc",
-      active: "true",
-      companyId:
-        companyId ||
-        this.state.folderSearch.query.companyId ||
-        this.props.account.companyId,
-      customerId: this.state.data.customerId,
-    };
-
-    if (
-      this.state.folderSearch.query.code &&
-      this.state.folderSearch.query.code.trim().length > 0
-    ) {
-      params.code = this.state.folderSearch.query.code;
-    }
-
-    axios
-      .get("/api/folders", {
-        headers: {
-          Accept: "application/json",
-        },
-        params,
-      })
-      .then((res) => {
-        this.setState({
-          folderSearch: {
-            ...this.state.folderSearch,
-            data: {
-              ...this.state.folderSearch.data,
-              limit: res.data.limit,
-              offset: res.data.offset,
-              sortBy: res.data.sortBy,
-              sortDirection: res.data.sortDirection,
-              total: res.data.total,
-              folders: res.data.data || [],
-            },
-          },
-        });
-      })
-      .catch((err) => {
-        this.setState({
-          notification: {
-            ...this.state.notification,
-            display: true,
-            severity: "danger",
-            message: "Falha ao buscar pastas, tente novamente.",
-          },
-        });
-      });
+  searchCourt() {
+    this.props.fetchCourts((courts) => this.setState({ courtSearch: { ...this.state.courtSearch, pagination: { ...this.state.courtSearch.pagination, total: courts.total } } }));
   }
 
   render() {
     return (
       <div>
+
         <Notification
           severity={this.state.notification.severity}
           message={this.state.notification.message}
@@ -635,7 +592,7 @@ class ContractCreate extends React.Component {
                                   <Button
                                     justIcon
                                     round
-                                    color="success"
+                                    color="transparent"
                                     onClick={(e) => this.selectCustomer(prop)}
                                   >
                                     <CheckIcon />
@@ -652,6 +609,15 @@ class ContractCreate extends React.Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
+            <Button
+              color="success"
+              style={{ float: "left" }}
+              onClick={() => {
+                this.props.history.push("/admin/customers/create");
+              }}
+            >
+              Adicionar Cliente
+            </Button>
             <Button
               color="transparent"
               autoFocus
@@ -771,7 +737,7 @@ class ContractCreate extends React.Component {
                                 <Button
                                   justIcon
                                   round
-                                  color="success"
+                                  color="transparent"
                                   onClick={(e) => this.selectLawyer(prop)}
                                 >
                                   <CheckIcon />
@@ -788,6 +754,15 @@ class ContractCreate extends React.Component {
           </DialogContent>
           <DialogActions>
             <Button
+              color="success"
+              style={{ float: "left" }}
+              onClick={() => {
+                this.props.history.push("/admin/registrations/lawyers");
+              }}
+            >
+              Adicionar Advogado
+            </Button>
+            <Button
               color="transparent"
               autoFocus
               onClick={() => {
@@ -801,78 +776,38 @@ class ContractCreate extends React.Component {
           </DialogActions>
         </Dialog>
 
-        <Dialog
-          open={this.state.folderSearch.display}
-          onClose={() => {
-            this.setState({
-              folderSearch: { ...this.state.folderSearch, display: false },
-            });
-          }}
-        >
-          <DialogTitle>Selecione uma pasta</DialogTitle>
+        <Dialog open={this.state.courtSearch.display} fullWidth maxWidth="sm" onClose={() => { this.setState({ courtSearch: { ...this.state.courtSearch, display: false } }); }} >
+          <DialogTitle>Selecione uma vara</DialogTitle>
           <DialogContent>
             <DialogContentText>
               <GridContainer>
-                <GridItem sm={12}>
-                  <CompanySelect
-                    labelText="Unidade"
-                    inputProps={{
-                      onChange: (e) => {
-                        this.setState({
-                          folderSearch: {
-                            ...this.state.folderSearch,
-                            query: {
-                              ...this.state.folderSearch.query,
-                              companyId: e.target.value,
-                            },
-                          },
-                        });
-                        this.searchFolder(e.target.value);
-                      },
-                      value: this.state.folderSearch.query.companyId,
-                    }}
-                  />
-                </GridItem>
 
-                <GridItem sm={12} md={10} lg={10}>
+                <GridItem sm={12} md={12} lg={12}>
                   <CustomInput
                     formControlProps={{
                       fullWidth: true,
                     }}
                     inputProps={{
-                      placeholder: "Código",
-                      onKeyPress: (e) => {
-                        if (e.key === "Enter") {
-                          this.searchFolder();
-                        }
-                      },
+                      placeholder: "Nome",
                       onChange: (e) =>
                         this.setState({
-                          folderSearch: {
-                            ...this.state.folderSearch,
+                          courtSearch: {
+                            ...this.state.courtSearch,
                             query: {
-                              ...this.state.folderSearch.query,
-                              code: e.target.value,
+                              ...this.state.courtSearch.query,
+                              name: e.target.value,
                             },
+                            pagination: {
+                              ...this.state.courtSearch.pagination,
+                              offset: 0
+                            }
                           },
                         }),
-                      value: this.state.folderSearch.query.code,
+                      value: this.state.courtSearch.query.name,
                     }}
                   />
                 </GridItem>
 
-                <GridItem sm={12} md={2} lg={2}>
-                  <CustomInput>
-                    <Button
-                      color="primary"
-                      justIcon
-                      round
-                      onClick={(e) => this.searchFolder()}
-                    >
-                      <SearchIcon />
-                    </Button>
-                  </CustomInput>
-                </GridItem>
               </GridContainer>
 
               <Table>
@@ -886,26 +821,17 @@ class ContractCreate extends React.Component {
                 </TableHead>
 
                 <TableBody>
-                  {this.state.folderSearch.data &&
-                    this.state.folderSearch.data.folders &&
-                    this.state.folderSearch.data.folders.length > 0 &&
-                    this.state.folderSearch.data.folders.map((prop, key) => {
+                  {this.props.courts && this.props.courts.data && this.props.courts.data.length > 0 && this.props.courts.data
+                    .filter(el => this.state.courtSearch.query.name.trim().length == 0 || el.name.toLowerCase().search(this.state.courtSearch.query.name.toLowerCase().trim()) != -1)
+                    .slice(this.state.courtSearch.pagination.offset, this.state.courtSearch.pagination.offset + this.state.courtSearch.pagination.limit)
+                    .map((prop, key) => {
                       return (
                         <TableRow key={key}>
-                          <TableCell
-                            style={{ padding: "5px 16px", width: "70%" }}
-                          >
-                            {prop.code}
-                          </TableCell>
+                          <TableCell style={{ padding: "5px 16px", width: "70%" }} > {prop.name} </TableCell>
                           <TableCell style={{ textAlign: "center" }}>
                             <Tooltip title="Selecionar" arrow>
                               <span>
-                                <Button
-                                  justIcon
-                                  round
-                                  color="success"
-                                  onClick={(e) => this.selectFolder(prop)}
-                                >
+                                <Button justIcon round color="transparent" onClick={(e) => this.selectCourt(prop)} >
                                   <CheckIcon />
                                 </Button>
                               </span>
@@ -916,20 +842,55 @@ class ContractCreate extends React.Component {
                     })}
                 </TableBody>
               </Table>
+              <GridContainer>
+                <GridItem sm={12} style={{ textAlign: "right" }}>
+                  <div style={{ display: "inline-flex" }}>
+
+                    <Tooltip title="Início" arrow>
+                      <div>
+                        <Button justIcon round color="transparent"
+                          disabled={this.state.courtSearch.pagination.offset == 0}
+                          onClick={e => this.setState({ courtSearch: { ...this.state.courtSearch, pagination: { ...this.state.courtSearch.pagination, offset: 0 } } })}>
+                          <SkipPreviousIcon /></Button>
+                      </div>
+                    </Tooltip>
+                    <Tooltip title="Anterior" arrow>
+                      <div>
+                        <Button justIcon round color="transparent"
+                          disabled={this.state.courtSearch.pagination.offset == 0}
+                          onClick={e => this.setState({ courtSearch: { ...this.state.courtSearch, pagination: { ...this.state.courtSearch.pagination, offset: this.state.courtSearch.pagination.offset - this.state.courtSearch.pagination.limit } } })}>
+                          <NavigateBeforeIcon /></Button>
+                      </div>
+                    </Tooltip>
+
+                    <p>Exibindo {Math.min(this.state.courtSearch.pagination.total, this.state.courtSearch.pagination.offset + this.state.courtSearch.pagination.limit)} de {this.state.courtSearch.pagination.total}</p>
+
+                    <Tooltip title="Próxima" arrow>
+                      <div>
+                        <Button justIcon round color="transparent"
+                          disabled={this.state.courtSearch.pagination.offset + this.state.courtSearch.pagination.limit >= this.state.courtSearch.pagination.total}
+                          onClick={e => this.setState({ courtSearch: { ...this.state.courtSearch, pagination: { ...this.state.courtSearch.pagination, offset: this.state.courtSearch.pagination.offset + this.state.courtSearch.pagination.limit } } })}>
+                          <NavigateNextIcon /></Button>
+                      </div>
+                    </Tooltip>
+
+                    <Tooltip title="Última" arrow>
+                      <div>
+                        <Button justIcon round color="transparent"
+                          disabled={this.state.courtSearch.pagination.offset + this.state.courtSearch.pagination.limit >= this.state.courtSearch.pagination.total}
+                          onClick={e => this.setState({ courtSearch: { ...this.state.courtSearch, pagination: { ...this.state.courtSearch.pagination, offset: this.state.courtSearch.pagination.total - this.state.courtSearch.pagination.limit } } })}>
+                          <SkipNextIcon /></Button>
+                      </div>
+                    </Tooltip>
+
+                  </div>
+                </GridItem>
+              </GridContainer>
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button
-              color="transparent"
-              autoFocus
-              onClick={() => {
-                this.setState({
-                  folderSearch: { ...this.state.folderSearch, display: false },
-                });
-              }}
-            >
-              Cancelar
-            </Button>
+            <Button color="success" style={{ float: "left" }} onClick={() => { this.props.history.push("/admin/registrations/courts"); }}>Adicionar Vara </Button>
+            <Button color="transparent" autoFocus onClick={() => { this.setState({ courtSearch: { ...this.state.courtSearch, display: false }, }); }} > Cancelar </Button>
           </DialogActions>
         </Dialog>
 
@@ -938,7 +899,7 @@ class ContractCreate extends React.Component {
         {this.state.currentStep === 1 && (
           <div>
             <h4 style={{ textAlign: "center" }}>
-              Em qual unidade esse contrato será criado?
+              Em qual unidade esse processo será criado?
             </h4>
             <GridContainer>
               <GridItem xs={12} sm={1} md={2} lg={3}></GridItem>
@@ -957,24 +918,15 @@ class ContractCreate extends React.Component {
               </GridItem>
             </GridContainer>
 
-            <Button
-              onClick={(e) => this.props.history.push("/admin/contracts")}
-            >
-              Voltar
-            </Button>
-            <Button
-              color="success"
-              onClick={(e) => this.setState({ currentStep: 2 })}
-            >
-              Avançar
-            </Button>
+            <Button onClick={(e) => this.props.history.push("/admin/processes")}>Voltar</Button>
+            <Button color="success" onClick={(e) => this.setState({ currentStep: 2 })}>Avançar</Button>
           </div>
         )}
 
         {this.state.currentStep === 2 && (
           <div>
             <h4 style={{ textAlign: "center" }}>
-              Qual o cliente desse contrato?
+              Qual o cliente desse processo?
             </h4>
             <GridContainer>
               <GridItem xs={12} sm={1} md={2} lg={3}></GridItem>
@@ -1029,25 +981,21 @@ class ContractCreate extends React.Component {
               </GridItem>
             </GridContainer>
 
-            <Button onClick={(e) => this.setState({ currentStep: 1 })}>
-              Voltar
-            </Button>
-            <Button
-              color="success"
-              onClick={(e) => {
-                if (this.state.data.customerId) {
-                  this.setState({ currentStep: 3 });
-                } else {
-                  this.setState({
-                    notification: {
-                      ...this.state.notification,
-                      display: true,
-                      severity: "danger",
-                      message: "Selecione um cliente para prosseguir.",
-                    },
-                  });
-                }
-              }}
+            <Button onClick={(e) => this.setState({ currentStep: 1 })}>Voltar</Button>
+            <Button color="success" onClick={(e) => {
+              if (this.state.data.customerId) {
+                this.setState({ currentStep: 3 });
+              } else {
+                this.setState({
+                  notification: {
+                    ...this.state.notification,
+                    display: true,
+                    severity: "danger",
+                    message: "Selecione um cliente para prosseguir.",
+                  },
+                });
+              }
+            }}
             >
               Avançar
             </Button>
@@ -1057,7 +1005,7 @@ class ContractCreate extends React.Component {
         {this.state.currentStep === 3 && (
           <div>
             <h4 style={{ textAlign: "center" }}>
-              Qual o advogado responsável desse contrato?
+              Qual o advogado responsável desse processo?
             </h4>
             <GridContainer>
               <GridItem xs={12} sm={1} md={2} lg={3}></GridItem>
@@ -1141,29 +1089,28 @@ class ContractCreate extends React.Component {
         {this.state.currentStep === 4 && (
           <div>
             <h4 style={{ textAlign: "center" }}>
-              Qual a pasta desse contrato?
+              Qual a vara desse processo?
+            </h4>
+            <h4 style={{ textAlign: "center" }}>
+              <small>A vara poderá ser alteradas posteriormente</small>
             </h4>
             <GridContainer>
               <GridItem xs={12} sm={1} md={2} lg={3}></GridItem>
               <GridItem xs={10} sm={9} md={8} lg={6}>
                 <CustomInput
-                  labelText="Pasta"
+                  labelText="Vara"
                   formControlProps={{ fullWidth: true }}
                   inputProps={{
-                    value: this.state.data.folderCode,
+                    value: this.state.data.courtName,
                     onClick: (e) => {
                       if (!e.target.value) {
                         this.setState({
-                          folderSearch: {
-                            ...this.state.folderSearch,
-                            display: true,
-                            query: {
-                              ...this.state.folderSearch.query,
-                              companyId: this.props.account.companyId,
-                            },
+                          courtSearch: {
+                            ...this.state.courtSearch,
+                            display: true
                           },
                         });
-                        this.searchFolder();
+                        this.searchCourt();
                       }
                     },
                   }}
@@ -1178,16 +1125,12 @@ class ContractCreate extends React.Component {
                     round
                     onClick={() => {
                       this.setState({
-                        folderSearch: {
-                          ...this.state.folderSearch,
-                          display: true,
-                          query: {
-                            ...this.state.folderSearch.query,
-                            companyId: this.props.account.companyId,
-                          },
+                        courtSearch: {
+                          ...this.state.courtSearch,
+                          display: true
                         },
                       });
-                      this.searchFolder();
+                      this.searchCourt();
                     }}
                   >
                     <SearchIcon />
@@ -1196,30 +1139,163 @@ class ContractCreate extends React.Component {
               </GridItem>
             </GridContainer>
 
-            <Button onClick={(e) => this.setState({ currentStep: 2 })}>
+            <Button onClick={(e) => this.setState({ currentStep: 3 })}>Voltar</Button>
+            <Button color="success"
+              onClick={e => {
+                this.setState({ currentStep: 5 });
+                this.props.fetchProcessActions((actions) => this.setState({
+                  actionSearch: {
+                    ...this.state.actionSearch, pagination: {
+                      ...this.state.actionSearch.pagination, total: actions.total
+                    }
+                  }
+                }));
+              }}>Avançar</Button>
+          </div>
+        )}
+
+        {this.state.currentStep === 5 && (
+          <div>
+            <h4 style={{ textAlign: "center" }}>
+              Qual o número e a ação do processo?
+            </h4>
+            <GridContainer>
+              <GridItem xs={12} sm={1} md={2} lg={3}></GridItem>
+              <GridItem xs={10} sm={9} md={8} lg={6}>
+                <CustomInput
+                  labelText="Número do processo"
+                  formControlProps={{ fullWidth: true }}
+                  inputProps={{
+                    value: this.state.data.code,
+                    onChange: e => this.setState({ data: { ...this.state.data, code: e.target.value } })
+                  }}
+                />
+              </GridItem>
+            </GridContainer>
+
+            <GridContainer>
+              <GridItem xs={12} sm={1} md={2} lg={3}></GridItem>
+
+
+              <GridItem xs={10} sm={9} md={8} lg={6}>
+                <CustomInput
+                  labelText="Ação"
+                  formControlProps={{ fullWidth: true }}
+                  inputProps={{
+                    value: this.state.data.action,
+                    onChange: e => this.setState({
+                      data: { ...this.state.data, action: e.target.value },
+                      actionSearch: { ...this.state.actionSearch, pagination: { ...this.state.actionSearch.pagination, offset: 0 } }
+                    })
+                  }}
+                />
+              </GridItem>
+            </GridContainer>
+
+            <GridContainer>
+              <GridItem xs={12} sm={1} md={2} lg={3}></GridItem>
+              <GridItem xs={10} sm={9} md={8} lg={6} style={{ overflowY: "scroll", borderBottom: "1px solid #cacaca", maxHeight: "300px", height: "300px" }}>
+                <Table>
+                  <TableBody>
+                    {this.props.processActions && this.props.processActions.data && this.props.processActions.data.length > 0 && this.props.processActions.data
+                      .filter(el => this.state.data.action.trim().length == 0 || el.name.toLowerCase().search(this.state.data.action.toLowerCase().trim()) != -1)
+                      .slice(this.state.actionSearch.pagination.offset, this.state.actionSearch.pagination.offset + this.state.actionSearch.pagination.limit)
+                      .map((prop, key) => {
+                        return (
+                          <TableRow key={key}>
+                            <TableCell style={{ padding: "5px 5px", width: "70%" }} > {prop.name} </TableCell>
+                            <TableCell style={{ textAlign: "center" }}>
+                              <Tooltip title="Selecionar" arrow>
+                                <span>
+                                  <Button justIcon round color="transparent" onClick={(e) => this.setState({ data: { ...this.state.data, action: prop.name } })} >
+                                    <CheckIcon />
+                                  </Button>
+                                </span>
+                              </Tooltip>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                </Table>
+              </GridItem>
+            </GridContainer>
+
+            <GridContainer>
+              <GridItem xs={12} sm={1} md={2} lg={3}></GridItem>
+              <GridItem xs={10} sm={9} md={8} lg={6} >
+                <GridContainer>
+                  <GridItem sm={12} style={{ textAlign: "right" }}>
+                    <div style={{ display: "inline-flex" }}>
+
+                      <Tooltip title="Início" arrow>
+                        <div>
+                          <Button justIcon round color="transparent"
+                            disabled={this.state.actionSearch.pagination.offset == 0}
+                            onClick={e => this.setState({ actionSearch: { ...this.state.actionSearch, pagination: { ...this.state.actionSearch.pagination, offset: 0 } } })}>
+                            <SkipPreviousIcon /></Button>
+                        </div>
+                      </Tooltip>
+                      <Tooltip title="Anterior" arrow>
+                        <div>
+                          <Button justIcon round color="transparent"
+                            disabled={this.state.actionSearch.pagination.offset == 0}
+                            onClick={e => this.setState({ actionSearch: { ...this.state.actionSearch, pagination: { ...this.state.actionSearch.pagination, offset: this.state.actionSearch.pagination.offset - this.state.actionSearch.pagination.limit } } })}>
+                            <NavigateBeforeIcon /></Button>
+                        </div>
+                      </Tooltip>
+
+                      <p>Exibindo {Math.min(this.state.actionSearch.pagination.total, this.state.actionSearch.pagination.offset + this.state.actionSearch.pagination.limit)} de {this.state.actionSearch.pagination.total}</p>
+
+                      <Tooltip title="Próxima" arrow>
+                        <div>
+                          <Button justIcon round color="transparent"
+                            disabled={this.state.actionSearch.pagination.offset + this.state.actionSearch.pagination.limit >= this.state.actionSearch.pagination.total}
+                            onClick={e => this.setState({ actionSearch: { ...this.state.actionSearch, pagination: { ...this.state.actionSearch.pagination, offset: this.state.actionSearch.pagination.offset + this.state.actionSearch.pagination.limit } } })}>
+                            <NavigateNextIcon /></Button>
+                        </div>
+                      </Tooltip>
+
+                      <Tooltip title="Última" arrow>
+                        <div>
+                          <Button justIcon round color="transparent"
+                            disabled={this.state.actionSearch.pagination.offset + this.state.actionSearch.pagination.limit >= this.state.actionSearch.pagination.total}
+                            onClick={e => this.setState({ actionSearch: { ...this.state.actionSearch, pagination: { ...this.state.actionSearch.pagination, offset: this.state.actionSearch.pagination.total - this.state.actionSearch.pagination.limit } } })}>
+                            <SkipNextIcon /></Button>
+                        </div>
+                      </Tooltip>
+
+                    </div>
+                  </GridItem>
+                </GridContainer>
+              </GridItem>
+            </GridContainer>
+
+
+            <Button onClick={(e) => this.setState({ currentStep: 4 })}>
               Voltar
             </Button>
-            <Button
-              color="success"
+            <Button color="success"
               onClick={(e) => {
-                if (this.state.data.folderId) {
-                  this.createContract();
+                if (this.state.data.code && this.state.data.code.trim().length > 0) {
+                  this.createProcess()
                 } else {
                   this.setState({
                     notification: {
                       ...this.state.notification,
                       display: true,
                       severity: "danger",
-                      message: "Selecione uma pasta para prosseguir.",
+                      message: "O número do processo é obrigatório.",
                     },
                   });
                 }
               }}
             >
-              Criar Contrato
+              Criar Processo
             </Button>
           </div>
-        )}
+        )
+        }
       </div>
     );
   }
@@ -1228,7 +1304,16 @@ class ContractCreate extends React.Component {
 const mapStateToProps = (state) => {
   return {
     account: state.account,
+    courts: state.common.data.courts,
+    processActions: state.common.data.processActions
   };
 };
 
-export default connect(mapStateToProps)(withRouter(ContractCreate));
+
+const mapDispatchToProps = dispatch => ({
+  fetchCourts: (callback) => dispatch(fetchCourts(callback, true)),
+  fetchProcessActions: (callback) => dispatch(fetchProcessActions(callback, true))
+})
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(ProcessCreate));

@@ -297,7 +297,10 @@ class CourtCrud extends React.Component {
                       <TableCell style={{ width: "40%", textAlign: "center" }}><CustomInput
                         labelText="Nome"
                         formControlProps={{ fullWidth: true, style: { marginTop: "0" } }}
-                        inputProps={{ value: this.state.filter.name, onChange: e => this.setState({ filter: { ...this.state.filter, name: e.target.value }, pagination: { ...this.state.pagination, offset: 0 } }) }} /></TableCell>
+                        inputProps={{
+                          value: this.state.filter.name,
+                          onChange: e => this.setState({ filter: { ...this.state.filter, name: e.target.value }, pagination: { ...this.state.pagination, offset: 0 } })
+                        }} /></TableCell>
                       <TableCell style={{ width: "40%", textAlign: "center" }}>Observações</TableCell>
                       <TableCell style={{ textAlign: "center" }}>Ações</TableCell>
                     </TableRow>

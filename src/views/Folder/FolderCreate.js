@@ -399,7 +399,7 @@ class FolderCreate extends React.Component {
                                   <Button
                                     justIcon
                                     round
-                                    color="transparent"
+                                    color="success"
                                     onClick={(e) => this.selectCustomer(prop)}
                                   >
                                     <CheckIcon />
@@ -416,15 +416,6 @@ class FolderCreate extends React.Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button
-              color="success"
-              style={{ float: "left" }}
-              onClick={() => {
-                this.props.history.push("/admin/customers/create");
-              }}
-            >
-              Adicionar Cliente
-            </Button>
             <Button
               color="transparent"
               autoFocus

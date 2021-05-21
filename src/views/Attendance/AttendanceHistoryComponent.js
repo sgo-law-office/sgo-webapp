@@ -167,10 +167,10 @@ class AttendanceDetails extends React.Component {
             ...this.state.add.data,
             value:
               this.state.add.data.type === "STATUS_CHANGE" &&
-              this.state.add.data.value === "WAITING"
+                this.state.add.data.value === "WAITING"
                 ? this.state.add.data.value +
-                  "_" +
-                  this.state.add.data.valueDetailed
+                "_" +
+                this.state.add.data.valueDetailed
                 : this.state.add.data.value,
           },
           {
@@ -220,7 +220,6 @@ class AttendanceDetails extends React.Component {
   }
 
   isValidToCreate(data) {
-    console.log(data);
     if (!data.type || !data.value) {
       return false;
     }
@@ -310,8 +309,8 @@ class AttendanceDetails extends React.Component {
                                 e.target.value === "MANUAL"
                                   ? "INPUT"
                                   : e.target.value === "STATUS_CHANGE"
-                                  ? "IN_PROGRESS"
-                                  : "",
+                                    ? "IN_PROGRESS"
+                                    : "",
                             },
                           },
                         }),
@@ -560,37 +559,43 @@ class AttendanceDetails extends React.Component {
                                   }}
                                 >
                                   <span>
-                                    Mudou o Status do atendimeno para&nbsp;
-                                    {e.value.split("_")[0] === "WAITING" && (
-                                      <span style={{ fontWeight: "bold" }}>
-                                        Aguardando&nbsp;
-                                        {e.value.split("_")[1] ===
-                                          "CUSTOMER" && <span>Cliente</span>}
-                                        {e.value.split("_")[1] ===
-                                          "INTERNAL" && (
-                                          <span>Pendência Interna</span>
-                                        )}
-                                        {e.value.split("_")[1] ===
-                                          "SCHEDULE" && <span>Retorno</span>}
-                                        {e.value.split("_")[1] === "OTHER" && (
-                                          <span>Outro</span>
-                                        )}
-                                      </span>
-                                    )}
-                                    {e.value === "IN_PROGRESS" && (
-                                      <span style={{ fontWeight: "bold" }}>
-                                        Em Progresso
-                                      </span>
-                                    )}
-                                    {e.value === "CONCLUDED" && (
-                                      <span style={{ fontWeight: "bold" }}>
-                                        Concluído
-                                      </span>
-                                    )}
-                                    {e.description &&
-                                      e.description.trim().length > 0 && (
-                                        <span>, com a descrição: </span>
+                                    {e.value === "CREATED" && <span>Atendimento Criado</span>}
+
+                                    {e.value != "CREATED" && <div>Mudou o Status do atendimeno para&nbsp;
+                                      
+                                      {e.value === "IN_PROGRESS" && (
+                                        <span style={{ fontWeight: "bold" }}>
+                                          Em Progresso
+                                        </span>
                                       )}
+                                      {e.value === "CONCLUDED" && (
+                                        <span style={{ fontWeight: "bold" }}>
+                                          Concluído
+                                        </span>
+                                      )}
+                                      {e.value.split("_")[0] === "WAITING" && (
+                                        <span style={{ fontWeight: "bold" }}>
+                                          Aguardando&nbsp;
+                                          {e.value.split("_")[1] ===
+                                            "CUSTOMER" && <span>Cliente</span>}
+                                          {e.value.split("_")[1] ===
+                                            "INTERNAL" && (
+                                              <span>Pendência Interna</span>
+                                            )}
+                                          {e.value.split("_")[1] ===
+                                            "SCHEDULE" && <span>Retorno</span>}
+                                          {e.value.split("_")[1] === "OTHER" && (
+                                            <span>Outro</span>
+                                          )}
+                                        </span>
+                                      )}
+
+                                      {e.description &&
+                                        e.description.trim().length > 0 && (
+                                          <span>, com a descrição: </span>
+                                        )}
+
+                                    </div>}
                                   </span>
                                 </div>
                               )}
@@ -673,7 +678,7 @@ class AttendanceDetails extends React.Component {
                           onClick={(e) =>
                             this.loadAttendanceHistory(
                               this.state.history.offset -
-                                this.state.history.limit
+                              this.state.history.limit
                             )
                           }
                         >
@@ -699,13 +704,13 @@ class AttendanceDetails extends React.Component {
                           color="transparent"
                           disabled={
                             this.state.history.offset +
-                              this.state.history.limit >=
+                            this.state.history.limit >=
                             this.state.history.total
                           }
                           onClick={(e) =>
                             this.loadAttendanceHistory(
                               this.state.history.offset +
-                                this.state.history.limit
+                              this.state.history.limit
                             )
                           }
                         >
@@ -722,13 +727,13 @@ class AttendanceDetails extends React.Component {
                           color="transparent"
                           disabled={
                             this.state.history.offset +
-                              this.state.history.limit >=
+                            this.state.history.limit >=
                             this.state.history.total
                           }
                           onClick={(e) =>
                             this.loadAttendanceHistory(
                               this.state.history.total -
-                                this.state.history.limit
+                              this.state.history.limit
                             )
                           }
                         >

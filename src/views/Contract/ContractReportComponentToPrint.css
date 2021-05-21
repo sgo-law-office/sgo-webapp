@@ -1,0 +1,19 @@
+.print-source {
+    display: none;
+}
+
+@media print {
+  .print-source {
+    display: block;
+  }
+}
+
+@page { 
+  size: auto;
+  margin: 15mm 0 30mm 0;
+}
+
+@page:first { 
+  margin: 0 0 25mm 0;
+} 
+

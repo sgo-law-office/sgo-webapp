@@ -622,7 +622,7 @@ class FolderPage extends React.Component {
                           </a>
                         </div>
                       </TableCell>
-                      <TableCell style={{ textAlign: "center", width: "30%" }}>
+                      <TableCell style={{ textAlign: "center", width: "20%" }}>
                         Criado por
                         <div
                           style={{
@@ -706,7 +706,7 @@ class FolderPage extends React.Component {
                                 format="DD/MM/YYYY"
                               />
                             </TableCell>
-                            <TableCell style={{ width: "30%" }}>
+                            <TableCell style={{ width: "20%" }}>
                               {prop.createdByName}
                             </TableCell>
                             <TableCell
