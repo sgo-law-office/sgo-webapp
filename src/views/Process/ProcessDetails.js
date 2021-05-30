@@ -142,6 +142,11 @@ class ProcessDetails extends React.Component {
         display: false,
         query: {
           name: ""
+        },
+        pagination: {
+          offset: 0,
+          limit: 10,
+          total: 0
         }
       },
 
@@ -369,6 +374,49 @@ class ProcessDetails extends React.Component {
       });
   }
 
+
+  updateCourt(court, successCallback) {
+    if (!this.state.data.id) return;
+
+    axios.patch("/api/processes/" + this.state.data.id + "/court", { courtId: court },
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+      .then((res) => {
+        if (res.status === 200) {
+          this.setState({
+            notification: {
+              ...this.state.notification,
+              display: true,
+              severity: "success",
+              message: "Alterações salvas com sucesso.",
+            },
+          });
+          successCallback();
+        } else {
+          this.setState({
+            notification: {
+              ...this.state.notification,
+              display: true,
+              severity: "danger",
+              message: "Falha ao salvar alterações, tente novamente.",
+            },
+          });
+        }
+      })
+      .catch((err) => {
+        this.setState({
+          notification: {
+            ...this.state.notification,
+            display: true,
+            severity: "danger",
+            message: "Falha ao salvar alterações, tente novamente.",
+          },
+        });
+      });
+  }
 
   searchContracts(
     offset = 0,
@@ -751,7 +799,7 @@ class ProcessDetails extends React.Component {
                   inputProps={{
                     placeholder: "Nome",
                     onChange: (e) => {
-                      this.setState({ actionSearch: { ...this.state.actionSearch, query: { ...this.state.actionSearch.query, name: e.target.value } } })
+                      this.setState({ actionSearch: { ...this.state.actionSearch, query: { ...this.state.actionSearch.query, name: e.target.value } }, pagination: { ...this.state.actionSearch.pagination, offset: 0 } })
                     },
                     value: this.state.actionSearch.query.name
                   }} />
@@ -848,6 +896,124 @@ class ProcessDetails extends React.Component {
           </DialogContent>
           <DialogActions>
             <Button autoFocus color="transparent" onClick={e => this.setState({ actionSearch: { ...this.state.actionSearch, display: false } })}>
+              Cancelar
+              </Button>
+          </DialogActions>
+        </Dialog>
+
+
+        <Dialog
+          open={this.state.courtSearch.display}
+          onClose={() => { this.setState({ courtSearch: { ...this.state.courtSearch, display: false } }); }}>
+          <DialogTitle>Alterar vara do processo</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              <p>Selecione abaixo a vara que gostaria de vincular ao processo.</p>
+            </DialogContentText>
+
+            <GridContainer>
+              <GridItem sm={12} md={12} lg={12}>
+                <CustomInput formControlProps={{ fullWidth: true }}
+                  inputProps={{
+                    placeholder: "Nome",
+                    onChange: (e) => {
+                      this.setState({ courtSearch: { ...this.state.courtSearch, query: { ...this.state.courtSearch.query, name: e.target.value }, pagination: { ...this.state.courtSearch.pagination, offset: 0 } } })
+                    },
+                    value: this.state.courtSearch.query.name
+                  }} />
+              </GridItem>
+            </GridContainer>
+
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell style={{ textAlign: "center", width: "80%" }}>Nome</TableCell>
+                  <TableCell>Ações</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {this.props.courts && this.props.courts.data && this.props.courts.data.length > 0 && this.props.courts.data
+                  .filter(el => this.state.courtSearch.query.name.trim().length == 0 || el.name.toLowerCase().search(this.state.courtSearch.query.name.toLowerCase().trim()) != -1)
+                  .slice(this.state.courtSearch.pagination.offset, this.state.courtSearch.pagination.offset + this.state.courtSearch.pagination.limit)
+                  .map((prop, key) => (
+                    <TableRow key={key}>
+                      <TableCell style={{ padding: "5px 16px", width: "80%" }} >{prop.name}</TableCell>
+                      <TableCell style={{ textAlign: "center" }}>
+                        <Tooltip title="Selecionar" arrow>
+                          <span>
+                            <Button justIcon round color="transparent" onClick={(e) => {
+                              this.updateCourt(prop.id, () => {
+                                this.setState({
+                                  courtSearch: {
+                                    ...this.state.courtSearch, display: false,
+                                    query: { ...this.state.courtSearch.query, name: "" },
+                                    pagination: { ...this.state.courtSearch.pagination, offset: 0 }
+                                  }
+                                })
+                              });
+                              setTimeout(this.loadProcess.bind(this), 600);
+                            }} >
+                              <CheckIcon />
+                            </Button>
+                          </span>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+            <GridContainer>
+              <GridItem xs={12} sm={1} md={2} lg={3}></GridItem>
+              <GridItem xs={10} sm={11} md={12} lg={9}>
+                <GridContainer>
+                  <GridItem sm={12} style={{ textAlign: "right" }}>
+                    <div style={{ display: "inline-flex" }}>
+
+                      <Tooltip title="Início" arrow>
+                        <div>
+                          <Button justIcon round color="transparent"
+                            disabled={this.state.courtSearch.pagination.offset == 0}
+                            onClick={e => this.setState({ courtSearch: { ...this.state.courtSearch, pagination: { ...this.state.courtSearch.pagination, offset: 0 } } })}>
+                            <SkipPreviousIcon /></Button>
+                        </div>
+                      </Tooltip>
+                      <Tooltip title="Anterior" arrow>
+                        <div>
+                          <Button justIcon round color="transparent"
+                            disabled={this.state.courtSearch.pagination.offset == 0}
+                            onClick={e => this.setState({ courtSearch: { ...this.state.courtSearch, pagination: { ...this.state.courtSearch.pagination, offset: this.state.courtSearch.pagination.offset - this.state.courtSearch.pagination.limit } } })}>
+                            <NavigateBeforeIcon /></Button>
+                        </div>
+                      </Tooltip>
+
+                      <p>Exibindo {Math.min(this.state.courtSearch.pagination.total, this.state.courtSearch.pagination.offset + this.state.courtSearch.pagination.limit)} de {this.state.courtSearch.pagination.total}</p>
+
+                      <Tooltip title="Próxima" arrow>
+                        <div>
+                          <Button justIcon round color="transparent"
+                            disabled={this.state.courtSearch.pagination.offset + this.state.courtSearch.pagination.limit >= this.state.courtSearch.pagination.total}
+                            onClick={e => this.setState({ courtSearch: { ...this.state.courtSearch, pagination: { ...this.state.courtSearch.pagination, offset: this.state.courtSearch.pagination.offset + this.state.courtSearch.pagination.limit } } })}>
+                            <NavigateNextIcon /></Button>
+                        </div>
+                      </Tooltip>
+
+                      <Tooltip title="Última" arrow>
+                        <div>
+                          <Button justIcon round color="transparent"
+                            disabled={this.state.courtSearch.pagination.offset + this.state.courtSearch.pagination.limit >= this.state.courtSearch.pagination.total}
+                            onClick={e => this.setState({ courtSearch: { ...this.state.courtSearch, pagination: { ...this.state.courtSearch.pagination, offset: this.state.courtSearch.pagination.total - this.state.courtSearch.pagination.limit } } })}>
+                            <SkipNextIcon /></Button>
+                        </div>
+                      </Tooltip>
+
+                    </div>
+                  </GridItem>
+                </GridContainer>
+              </GridItem>
+            </GridContainer>
+          </DialogContent>
+          <DialogActions>
+            <Button autoFocus color="transparent" onClick={e => this.setState({ courtSearch: { ...this.state.courtSearch, display: false } })}>
               Cancelar
               </Button>
           </DialogActions>
@@ -1003,7 +1169,19 @@ class ProcessDetails extends React.Component {
                         {this.state.data.courtName}
                       </span>
                       <Tooltip arrow title="Alterar Vara">
-                        <EditIcon fontSize="small" style={{ marginLeft: "5px", cursor: "pointer", opacity: "0.8" }} onClick={e => e.preventDefault()} />
+                        <EditIcon fontSize="small" style={{ marginLeft: "5px", cursor: "pointer", opacity: "0.8" }} onClick={e => {
+                          this.props.fetchCourts((actions) => this.setState({
+                            courtSearch: {
+                              ...this.state.courtSearch,
+                              display: true,
+                              pagination: {
+                                ...this.state.courtSearch.pagination,
+                                total: actions.total
+                              }
+                            }
+                          }));
+
+                        }} />
                       </Tooltip>
                     </CustomInput>
                   </GridItem>
