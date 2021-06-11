@@ -841,7 +841,7 @@ class ContractDetails extends React.Component {
 
                       <GridItem xs={12} sm={6} md={12} lg={12}>
                         <Button color="success" onClick={(e) => { /* todo */ }}>Vincular Processo</Button>
-                        <Button color="success" onClick={(e) => this.props.history.push("/admin/processes/create")}>Novo processo</Button>
+                        <Button color="success" onClick={(e) => this.props.history.push("/admin/processes/create?contractId=" + this.state.data.id)}>Novo processo</Button>
                       </GridItem>
                     </GridContainer>
                   )}

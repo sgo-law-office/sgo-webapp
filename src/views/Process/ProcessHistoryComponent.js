@@ -78,6 +78,14 @@ class ProcessHistoryComponent extends React.Component {
         },
       },
 
+
+      dialog: {
+        display: false,
+        title: "",
+        message: "",
+        actions: []
+      },
+
       notification: {
         display: false,
         severity: "",
@@ -221,6 +229,48 @@ class ProcessHistoryComponent extends React.Component {
     return true;
   }
 
+  detachContract(contractId) {
+
+    axios.patch("/api/processes/" + this.props.processId + "/detach-contract", { contractId: contractId },
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+      .then((res) => {
+        if (res.status === 200) {
+          this.setState({
+            notification: {
+              ...this.state.notification,
+              display: true,
+              severity: "success",
+              message: "Alterações salvas com sucesso.",
+            },
+          });
+          this.loadProcessHistory();
+        } else {
+          this.setState({
+            notification: {
+              ...this.state.notification,
+              display: true,
+              severity: "danger",
+              message: "Falha ao salvar alterações, tente novamente.",
+            },
+          });
+        }
+      })
+      .catch((err) => {
+        this.setState({
+          notification: {
+            ...this.state.notification,
+            display: true,
+            severity: "danger",
+            message: "Falha ao salvar alterações, tente novamente.",
+          },
+        });
+      });
+  }
+
   render() {
     return (
       <div>
@@ -239,6 +289,24 @@ class ProcessHistoryComponent extends React.Component {
             });
           }}
         />
+
+
+        <Dialog
+          fullWidth={this.state.dialog.fullWidth}
+          maxWidth={this.state.dialog.maxWidth}
+          open={this.state.dialog.display}
+          onClose={() => { this.setState({ dialog: { ...this.state.dialog, display: false } }) }}>
+          <DialogTitle >{this.state.dialog.title}</DialogTitle>
+          <DialogContent>
+            <DialogContentText>{this.state.dialog.message}</DialogContentText>
+          </DialogContent>
+          {(this.state.dialog.actions && this.state.dialog.actions.length > 0) &&
+            <DialogActions>
+              {this.state.dialog.actions.map((e, i) => {
+                return <Button key={i} color={e.color ? e.color : "transparent"} autoFocus={e.autoFocus} onClick={(ev) => { if (e.callback) { e.callback(ev); } }}>{e.text}</Button>
+              })}
+            </DialogActions>}
+        </Dialog>
 
         <Dialog
           open={this.state.add.display}
@@ -338,7 +406,105 @@ class ProcessHistoryComponent extends React.Component {
                             </GridItem>
 
                             <GridItem xs={12} sm={12} md={9} lg={10}>
-                              {e.description && e.description.trim().length > 0 && (
+                              {e.type === 'EVENT' && <div
+                                style={{
+                                  backgroundColor: "rgba(76, 175, 80, 0.15)",
+                                  margin: "10px 10px 0 0",
+                                  padding: "10px 5px",
+                                  boxShadow:
+                                    "0 2px 2px 0 rgba(76, 175, 80, 0.14)",
+                                }}
+                              >
+                                <span>
+                                  {e.value === 'CREATED' && <div>Processo Criado.</div>}
+                                  {e.value === 'STATUS_CHANGE' && <div>
+                                    Mudou o Status do processo
+                                    {e.metadata.from ? " de " : ""}
+                                    <span style={{ fontWeight: "bold" }}>
+                                      {e.metadata.from ? ({ OPEN: "Em andamento", CONCLUDED: "Concluído", }[e.metadata.from]) + " " : ""}
+                                    </span>
+                                    {e.metadata.to ? " para " : ""}
+                                    <span style={{ fontWeight: "bold" }}>
+                                      {e.metadata.to ? ({ OPEN: "Em andamento", CONCLUDED: "Concluído", }[e.metadata.to]) + "." : ""}
+                                    </span>
+                                  </div>}
+
+                                  {e.value === 'ATTACH_OTHER_LAWYER' && <div>
+                                    {e.metadata.lawyerName ? "Adicionou o advogado " : ""}
+                                    <span style={{ fontWeight: "bold" }}>
+                                      {e.metadata.lawyerName}
+                                    </span>
+                                    {e.metadata.lawyerName ? " ao processo." : "Adicionou um advogado ao processo."}
+                                  </div>}
+                                  {e.value === 'DETACH_OTHER_LAWYER' && <div>
+                                    {e.metadata.lawyerName ? "Removeu o advogado " : ""}
+                                    <span style={{ fontWeight: "bold" }}>
+                                      {e.metadata.lawyerName}
+                                    </span>
+                                    {e.metadata.lawyerName ? " do processo." : "Removeu um advogado do processo."}
+                                  </div>}
+
+
+                                  {(e.value === 'UPDATE_CODE' || e.value === 'UPDATE_ACTION' || e.value === 'UPDATE_COURT') && <div>
+                                    Atualizou {{"UPDATE_CODE" : "o número ", "UPDATE_ACTION": "a ação", "UPDATE_COURT": "a vara" }[e.value]} do processo de
+                                    <span style={{ fontWeight: "bold" }}>
+                                      {e.metadata.from ? " " + e.metadata.from + " " : " vazio "}
+                                    </span>
+                                    para
+                                    <span style={{ fontWeight: "bold" }}>
+                                      {e.metadata.to ? " " + e.metadata.to : " vazio"}
+                                    </span>
+                                    .
+                                  </div>}
+
+
+                                  {e.value === 'ATTACH_CONTRACT' && <div>
+                                    Vinculou um contrato a esse processo.
+                                    <a href={"/admin/contracts/" + e.metadata.contractId} onClick={ev => { ev.preventDefault(); this.props.history.push("/admin/contracts/" + e.metadata.contractId) }}>Ver contrato.</a>
+                                    <a style={{ marginLeft: "5px" }} href={"/admin/contracts/" + e.metadata.contractId} onClick={ev => {
+                                      ev.preventDefault();
+                                      this.setState({
+                                        dialog: {
+                                          title: "Deseja continuar?",
+                                          fullWidth: false,
+                                          display: true,
+                                          message: "Cuidado! Essa ação poderá deixar os dados inconsistêntes nas buscas e relatórios.",
+                                          actions: [
+                                            {
+                                              text: "Cancelar",
+                                              color: "transparent",
+                                              autoFocus: true,
+                                              callback: () => {
+                                                this.setState({
+                                                  dialog: {
+                                                    ...this.state.dialog,
+                                                    display: false
+                                                  }
+                                                })
+                                              }
+                                            },
+                                            {
+                                              text: "Estou ciente e quero continuar",
+                                              color: "danger",
+                                              callback: () => {
+                                                this.detachContract(e.metadata.contractId);
+                                                this.setState({
+                                                  dialog: {
+                                                    ...this.state.dialog,
+                                                    display: false
+                                                  }
+                                                });
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      })
+                                    }}>Remover vínculo.</a>
+                                  </div>}
+                                  {e.value === 'DETACH_CONTRACT' && <div>Removeu o vínculo de um contrato com esse processo. <a href={"/admin/contracts/" + e.metadata.contractId} onClick={e => { e.preventDefault(); this.props.history.push("/admin/contracts/" + e.metadata.contractId) }}>Ver contrato desvinculado</a></div>}
+                                </span>
+                              </div>}
+                              {e.type !== 'EVENT' && e.description && e.description.trim().length > 0 && (
                                 <p style={{ whiteSpace: "pre-line", borderLeft: "3px solid rgba(0, 0, 0, 0.12)", paddingLeft: "10px", }} >
                                   {e.description}
                                 </p>

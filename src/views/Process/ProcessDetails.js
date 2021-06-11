@@ -42,6 +42,7 @@ import ClearIcon from '@material-ui/icons/Clear';
 
 import CompanySelect from "components/CompanySelect/CompanySelect";
 import Input from "@material-ui/core/Input";
+import AssignmentOutlinedIcon from "@material-ui/icons/AssignmentOutlined";
 
 
 
@@ -65,6 +66,7 @@ import moment from "moment";
 import ProcessHistoryComponent from "./ProcessHistoryComponent";
 import { fetchCourts } from "store/actions";
 import { fetchProcessActions } from "store/actions";
+import { Folder } from "@material-ui/icons";
 //import ContractReportComponent from "./ContractReportComponent";
 
 const axios = Axios.create();
@@ -217,6 +219,7 @@ class ProcessDetails extends React.Component {
   }
 
   loadProcess() {
+    this.setState({ data: this.getInitialDataState() });
     axios
       .get("/api/processes/" + this.props.match.params.id + ":summary", {
         headers: {
@@ -241,6 +244,7 @@ class ProcessDetails extends React.Component {
           notFound: true,
         });
       });
+
   }
 
   toggleStatus() {
@@ -289,26 +293,39 @@ class ProcessDetails extends React.Component {
   updateCode() {
     if (!this.state.data.id) return;
 
-    axios.patch("/api/processes/" + this.state.data.id + "/code/" + this.state.data.code,
-      {
-        headers: {
-          Accept: "application/json",
-        },
-      })
-      .then((res) => {
-        if (res.status === 200) {
-          this.setState({
-            notification: {
-              ...this.state.notification,
-              display: true,
-              severity: "success",
-              message: "Alterações salvas com sucesso.",
-            },
-          });
-          this.setState({ editing: { ...this.state.editing, processCode: false } });
-          this.loadProcess();
+    if (this.state.data.code && this.state.data.code.trim()) {
 
-        } else {
+      axios.patch("/api/processes/" + this.state.data.id + "/code/" + this.state.data.code,
+        {
+          headers: {
+            Accept: "application/json",
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            this.setState({
+              notification: {
+                ...this.state.notification,
+                display: true,
+                severity: "success",
+                message: "Alterações salvas com sucesso.",
+              },
+            });
+            this.setState({ editing: { ...this.state.editing, processCode: false } });
+            this.loadProcess();
+
+          } else {
+            this.setState({
+              notification: {
+                ...this.state.notification,
+                display: true,
+                severity: "danger",
+                message: "Falha ao salvar alterações, tente novamente.",
+              },
+            });
+          }
+        })
+        .catch((err) => {
           this.setState({
             notification: {
               ...this.state.notification,
@@ -317,21 +334,47 @@ class ProcessDetails extends React.Component {
               message: "Falha ao salvar alterações, tente novamente.",
             },
           });
-        }
-      })
-      .catch((err) => {
-        this.setState({
-          notification: {
-            ...this.state.notification,
-            display: true,
-            severity: "danger",
-            message: "Falha ao salvar alterações, tente novamente.",
-          },
         });
-      });
+    } else {
+      axios.delete("/api/processes/" + this.state.data.id + "/code")
+        .then((res) => {
+          if (res.status === 200) {
+            this.setState({
+              notification: {
+                ...this.state.notification,
+                display: true,
+                severity: "success",
+                message: "Alterações salvas com sucesso.",
+              },
+            });
+            this.setState({ editing: { ...this.state.editing, processCode: false } });
+            this.loadProcess();
+
+          } else {
+            this.setState({
+              notification: {
+                ...this.state.notification,
+                display: true,
+                severity: "danger",
+                message: "Falha ao salvar alterações, tente novamente.",
+              },
+            });
+          }
+        })
+        .catch((err) => {
+          this.setState({
+            notification: {
+              ...this.state.notification,
+              display: true,
+              severity: "danger",
+              message: "Falha ao salvar alterações, tente novamente.",
+            },
+          });
+        });
+    }
   }
 
-  updateProcessAction(action, successCallback) {
+  updateProcessAction(action) {
     if (!this.state.data.id) return;
 
     axios.patch("/api/processes/" + this.state.data.id + "/action", { action: action },
@@ -350,7 +393,15 @@ class ProcessDetails extends React.Component {
               message: "Alterações salvas com sucesso.",
             },
           });
-          successCallback();
+
+          this.setState({
+            actionSearch: {
+              ...this.state.actionSearch, display: false,
+              query: { ...this.state.actionSearch.query, name: "" },
+              pagination: { ...this.state.actionSearch.pagination, offset: 0 }
+            }
+          })
+          this.loadProcess();
         } else {
           this.setState({
             notification: {
@@ -375,7 +426,7 @@ class ProcessDetails extends React.Component {
   }
 
 
-  updateCourt(court, successCallback) {
+  updateCourt(court) {
     if (!this.state.data.id) return;
 
     axios.patch("/api/processes/" + this.state.data.id + "/court", { courtId: court },
@@ -394,7 +445,14 @@ class ProcessDetails extends React.Component {
               message: "Alterações salvas com sucesso.",
             },
           });
-          successCallback();
+          this.setState({
+            courtSearch: {
+              ...this.state.courtSearch, display: false,
+              query: { ...this.state.courtSearch.query, name: "" },
+              pagination: { ...this.state.courtSearch.pagination, offset: 0 }
+            }
+          })
+          this.loadProcess();
         } else {
           this.setState({
             notification: {
@@ -778,15 +836,13 @@ class ProcessDetails extends React.Component {
           <DialogActions>
             <Button autoFocus color="transparent" onClick={e => this.setState({ lawyerSearch: { ...this.state.lawyerSearch, display: false } })}>
               Cancelar
-              </Button>
+            </Button>
           </DialogActions>
         </Dialog>
 
-
-
         <Dialog
           open={this.state.actionSearch.display}
-          onClose={() => { this.setState({ actionSearch: { ...this.state.actionSearch, display: false } }); }}>
+          onClose={() => { this.setState({ actionSearch: { ...this.state.actionSearch, display: false, query: { ...this.state.actionSearch.query, name: "" }, pagination: { ...this.state.actionSearch.pagination, offset: 0 } } }); }}>
           <DialogTitle>Alterar ação do processo</DialogTitle>
           <DialogContent>
             <DialogContentText>
@@ -814,6 +870,22 @@ class ProcessDetails extends React.Component {
                 </TableRow>
               </TableHead>
               <TableBody>
+
+                {this.state.actionSearch.query.name && <TableRow>
+                  <TableCell style={{ padding: "5px 16px", width: "80%" }} >{this.state.actionSearch.query.name}</TableCell>
+                  <TableCell style={{ textAlign: "center" }}>
+                    <Tooltip title="Selecionar" arrow>
+                      <span>
+                        <Button justIcon round color="transparent" onClick={(e) => {
+                          this.updateProcessAction(this.state.actionSearch.query.name);
+                        }} >
+                          <CheckIcon />
+                        </Button>
+                      </span>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>}
+
                 {this.props.processActions && this.props.processActions.data && this.props.processActions.data.length > 0 && this.props.processActions.data
                   .filter(el => this.state.actionSearch.query.name.trim().length == 0 || el.name.toLowerCase().search(this.state.actionSearch.query.name.toLowerCase().trim()) != -1)
                   .slice(this.state.actionSearch.pagination.offset, this.state.actionSearch.pagination.offset + this.state.actionSearch.pagination.limit)
@@ -824,16 +896,7 @@ class ProcessDetails extends React.Component {
                         <Tooltip title="Selecionar" arrow>
                           <span>
                             <Button justIcon round color="transparent" onClick={(e) => {
-                              this.updateProcessAction(prop.name, () => {
-                                this.setState({
-                                  actionSearch: {
-                                    ...this.state.actionSearch, display: false,
-                                    query: { ...this.state.actionSearch.query, name: "" },
-                                    pagination: { ...this.state.actionSearch.pagination, offset: 0 }
-                                  }
-                                })
-                              });
-                              setTimeout(this.loadProcess.bind(this), 600);
+                              this.updateProcessAction(prop.name);
                             }} >
                               <CheckIcon />
                             </Button>
@@ -897,7 +960,7 @@ class ProcessDetails extends React.Component {
           <DialogActions>
             <Button autoFocus color="transparent" onClick={e => this.setState({ actionSearch: { ...this.state.actionSearch, display: false } })}>
               Cancelar
-              </Button>
+            </Button>
           </DialogActions>
         </Dialog>
 
@@ -942,16 +1005,7 @@ class ProcessDetails extends React.Component {
                         <Tooltip title="Selecionar" arrow>
                           <span>
                             <Button justIcon round color="transparent" onClick={(e) => {
-                              this.updateCourt(prop.id, () => {
-                                this.setState({
-                                  courtSearch: {
-                                    ...this.state.courtSearch, display: false,
-                                    query: { ...this.state.courtSearch.query, name: "" },
-                                    pagination: { ...this.state.courtSearch.pagination, offset: 0 }
-                                  }
-                                })
-                              });
-                              setTimeout(this.loadProcess.bind(this), 600);
+                              this.updateCourt(prop.id);
                             }} >
                               <CheckIcon />
                             </Button>
@@ -1015,7 +1069,7 @@ class ProcessDetails extends React.Component {
           <DialogActions>
             <Button autoFocus color="transparent" onClick={e => this.setState({ courtSearch: { ...this.state.courtSearch, display: false } })}>
               Cancelar
-              </Button>
+            </Button>
           </DialogActions>
         </Dialog>
 
@@ -1062,6 +1116,7 @@ class ProcessDetails extends React.Component {
                             inputProps={{ style: { padding: "0 0 6px 0" } }}
                             value={this.state.data.code}
                             onChange={(e) => this.setState({ data: { ...this.state.data, code: e.target.value } })}
+                            onKeyPress={e => { if (e.key === 'Enter') { this.updateCode() } }}
                           />
 
                           <Tooltip arrow title="Salvar">
@@ -1095,7 +1150,7 @@ class ProcessDetails extends React.Component {
                       <span>Status</span>
                       <span style={{ fontWeight: "bold", marginLeft: "10px" }}>
                         {{
-                          OPEN: "Aberto",
+                          OPEN: "Em andamento",
                           CONCLUDED: "Concluído",
                         }[this.state.data.currentStatus]}
                       </span>
@@ -1167,6 +1222,7 @@ class ProcessDetails extends React.Component {
                       <span>Vara</span>
                       <span style={{ fontWeight: "bold", marginLeft: "10px" }}>
                         {this.state.data.courtName}
+                        {!this.state.data.courtName && <span style={{ fontStyle: "italic", color: "grey", fontWeight: "lighter", margin: "0 10px" }}>vazio</span>}
                       </span>
                       <Tooltip arrow title="Alterar Vara">
                         <EditIcon fontSize="small" style={{ marginLeft: "5px", cursor: "pointer", opacity: "0.8" }} onClick={e => {
@@ -1193,6 +1249,7 @@ class ProcessDetails extends React.Component {
                       <span>Ação</span>
                       <span style={{ fontWeight: "bold", marginLeft: "10px" }}>
                         {this.state.data.action}
+                        {!this.state.data.action && <span style={{ fontStyle: "italic", color: "grey", fontWeight: "lighter", margin: "0 10px" }}>vazio</span>}
                       </span>
                       <Tooltip arrow title="Alterar Ação">
                         <EditIcon fontSize="small" style={{ marginLeft: "5px", cursor: "pointer", opacity: "0.8" }} onClick={e => {
@@ -1347,19 +1404,6 @@ class ProcessDetails extends React.Component {
                           },
                         })
                       } />}
-                  {/* 
-                  <ContractReportComponent
-                    contract={this.state.data}
-                    callback={data => this.setState({
-                      reports: {
-                        ...this.state.reports,
-                        data: {
-                          ...this.state.reports.data,
-                          ...data
-                        }
-                      }
-                    })}
-                    newReportAddedCallback={() => this.loadContract()} /> */}
                 </div>
 
                 <div role="tabpanel" hidden={this.state.tabs.value !== 1}>
@@ -1385,22 +1429,22 @@ class ProcessDetails extends React.Component {
                               <Table>
                                 <TableHead>
                                   <TableRow>
-                                    <TableCell style={{ textAlign: "center", width: "20%", }}>Número do processo</TableCell>
-                                    <TableCell style={{ textAlign: "center", width: "30%", }} >Nome do advogado
-                                    <div style={{ display: "inline", verticalAlign: "top", padding: "0 5px", }} >
+                                    <TableCell style={{ textAlign: "center", width: "30%", }}>Advogado Responsável</TableCell>
+                                    <TableCell style={{ textAlign: "center", width: "20%", }} >Pasta</TableCell>
+
+                                    <TableCell style={{ textAlign: "center" }}>Status
+                                      <div style={{ display: "inline", verticalAlign: "top", padding: "0 5px", }} >
                                         <a href="#">
-                                          {(this.state.contracts.data.sortBy !== "lawyer_name" || this.state.contracts.data.sortDirection === "desc") &&
-                                            (<ArrowDropDownIcon color={this.state.contracts.data.sortBy === "name" ? "" : "disabled"} onClick={(e) => { this.searchContracts(undefined, undefined, "lawyer_name", "asc"); }} />)}
-                                          {this.state.contracts.data.sortBy === "lawyer_name" && this.state.contracts.data.sortDirection === "asc" &&
-                                            (<ArrowDropUpIcon color={this.state.contracts.data.sortBy === "name" ? "" : "disabled"} onClick={(e) => { this.searchContracts(undefined, undefined, "lawyer_name", "desc"); }} />)}
+                                          {(this.state.contracts.data.sortBy !== "status" || this.state.contracts.data.sortDirection === "desc") &&
+                                            (<ArrowDropDownIcon color={this.state.contracts.data.sortBy === "status" ? "" : "disabled"} onClick={(e) => { this.searchContracts(undefined, undefined, "status", "asc"); }} />)}
+                                          {this.state.contracts.data.sortBy === "status" && this.state.contracts.data.sortDirection === "asc" &&
+                                            (<ArrowDropUpIcon color={this.state.contracts.data.sortBy === "status" ? "" : "disabled"} onClick={(e) => { this.searchContracts(undefined, undefined, "status", "desc"); }} />)}
                                         </a>
                                       </div>
                                     </TableCell>
 
-                                    <TableCell style={{ textAlign: "center" }}>Status</TableCell>
-
                                     <TableCell style={{ textAlign: "center" }}>Criado em
-                                    <div style={{ display: "inline", verticalAlign: "top", padding: "0 5px", }} >
+                                      <div style={{ display: "inline", verticalAlign: "top", padding: "0 5px", }} >
                                         <a href="#">
                                           {(this.state.contracts.data.sortBy !== "created_at" || this.state.contracts.data.sortDirection === "desc") &&
                                             (<ArrowDropDownIcon color={this.state.contracts.data.sortBy === "created_at" ? "" : "disabled"} onClick={(e) => { this.searchContracts(undefined, undefined, "created_at", "asc"); }} />)}
@@ -1418,25 +1462,42 @@ class ProcessDetails extends React.Component {
                                   {this.state.contracts.data.contracts && this.state.contracts.data.contracts.length > 0 && this.state.contracts.data.contracts.map((prop, key) => {
                                     return (
                                       <TableRow key={key}>
-                                        <TableCell style={{ width: "20%" }}>NNNNNNN-DD.AAAA.JTR.OOOO</TableCell>
                                         <TableCell style={{ padding: "5px 16px", width: "30%", }}>{prop.lawyerName}</TableCell>
-                                        <TableCell style={{ padding: "5px 16px", textAlign: "center", }}>
+                                        <TableCell style={{ width: "20%" }}>
+                                          <span style={{ fontWeight: "bold", marginLeft: "10px" }}>
+                                            <a href={"/admin/folders/" + prop.folderId} onClick={(e) => { e.preventDefault(); this.props.history.push("/admin/folders/" + prop.folderId); }} >
+                                              {prop.folderCode}
+                                            </a>
+                                          </span>
+
+                                        </TableCell>
+                                        <TableCell style={{ padding: "5px 16px", textAlign: "center" }}>
                                           {{
                                             CURRENT: "Vigente",
                                             FILED: "Arquivado",
                                           }[prop.status]}
                                         </TableCell>
 
-                                        <TableCell style={{ padding: "5px 16px", textAlign: "center", }} ><Moment date={prop.createdAt} format="DD/MM/YYYY" /></TableCell>
+                                        <TableCell style={{ padding: "5px 16px", textAlign: "center" }} ><Moment date={prop.createdAt} format="DD/MM/YYYY" /></TableCell>
 
-                                        <TableCell style={{ padding: "5px 16px", textAlign: "center", }} >
-                                          <Tooltip title="Detalhes" arrow>
+                                        <TableCell style={{ padding: "5px 16px", textAlign: "center" }} >
+                                          <Tooltip title="Ver contrato" arrow>
                                             <span>
                                               <Button justIcon round color="transparent" onClick={(e) => this.props.history.push("/admin/contracts/" + prop.id)}>
                                                 <DescriptionOutlinedIcon />
                                               </Button>
                                             </span>
                                           </Tooltip>
+
+                                          {prop.attendanceId && <Tooltip title="Ver atendimento" arrow>
+                                            <span>
+                                              <Button justIcon round color="transparent" onClick={(e) => this.props.history.push("/admin/attendances/" + prop.attendanceId)}>
+                                                <AssignmentOutlinedIcon />
+                                              </Button>
+                                            </span>
+                                          </Tooltip>}
+
+
                                         </TableCell>
                                       </TableRow>
                                     );
@@ -1500,7 +1561,8 @@ class ProcessDetails extends React.Component {
                       </GridItem>
 
                       <GridItem xs={12} sm={6} md={12} lg={12}>
-                        <Button color="success" onClick={(e) => this.props.history.push("/admin/contracts/create")}>Adicionar novo contrato</Button>
+                        <Button color="success" onClick={(e) => this.props.history.push("/admin/contracts/create")}>Vincular contrato</Button>
+                        <Button color="success" onClick={(e) => this.props.history.push("/admin/contracts/create")}>Novo contrato</Button>
                       </GridItem>
                     </GridContainer>
                   )}
