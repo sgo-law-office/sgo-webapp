@@ -33,6 +33,10 @@ import NavigateNextIcon from "@material-ui/icons/NavigateNext";
 import NavigateBeforeIcon from "@material-ui/icons/NavigateBefore";
 import SkipNextIcon from "@material-ui/icons/SkipNext";
 import SkipPreviousIcon from "@material-ui/icons/SkipPrevious";
+import CheckIcon from '@material-ui/icons/Check';
+import ClearIcon from '@material-ui/icons/Clear';
+
+
 
 import Axios from "axios";
 import {
@@ -95,6 +99,21 @@ class ContractDetails extends React.Component {
           sortDirection: "desc",
           processes: [],
         },
+      },
+
+
+      processesSearch: {
+        display: false,
+        loading: true,
+        err: false,
+        data: {
+          limit: 10,
+          offset: 0,
+          total: 0,
+          sortBy: "created_by",
+          sortDirection: "desc",
+          processes: [],
+        }
       },
 
       reports: {
@@ -333,6 +352,140 @@ class ContractDetails extends React.Component {
       });
   }
 
+
+  searchProcessesToAttach(
+    offset = 0,
+    limit = 10,
+    sortBy = "created_at",
+    sortDirection = "desc"
+  ) {
+
+    const params = {
+      offset: offset,
+      limit: limit,
+      sortBy: sortBy,
+      sortDirection: sortDirection,
+      customerId: this.state.data.customerId
+    };
+
+    axios
+      .get("/api/processes", {
+        headers: {
+          Accept: "application/json",
+        },
+        params,
+      })
+      .then((res) => {
+        // Remove processes that are already attached (this.state.processes)
+        const sanitizedResults = res.data.data.filter(el => !this.state.processes.data.processes.map(p => p.id).includes(el.id));
+
+        this.setState({
+          processesSearch: {
+            ...this.state.processesSearch,
+            loading: false,
+            err: false,
+            data: {
+              ...this.state.processesSearch.data,
+              limit: res.data.limit,
+              offset: res.data.offset,
+              sortBy: res.data.sortBy,
+              sortDirection: res.data.sortDirection,
+              total: sanitizedResults.length,
+              processes: sanitizedResults || [],
+            },
+          },
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+        this.setState({
+          processesSearch: {
+            ...this.state.processesSearch,
+            loading: false,
+            err: true,
+          },
+        });
+      });
+  }
+
+  attachToProcess(processId) {
+    axios.patch("/api/contracts/" + this.state.data.id + "/attach-process", { processId: processId },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        }
+      })
+      .then((res) => {
+        this.setState({
+          processesSearch: {
+            ...this.state.processesSearch,
+            display: false
+          },
+          notification: {
+            ...this.state.notification,
+            display: true,
+            severity: "success",
+            message: "Processo vinculado com sucesso.",
+          }
+        });
+        this.searchProcesses();
+      })
+      .catch((err) => {
+        this.setState({
+          notification: {
+            ...this.state.notification,
+            display: true,
+            severity: "error",
+            message: "Falha ao vincular processo, tente novamente.",
+          }
+        });
+      });
+  }
+
+
+  detachProcess(processId) {
+    axios.patch("/api/contracts/" + this.state.data.id + "/detach-process", { processId: processId },
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+      .then((res) => {
+        if (res.status === 200) {
+          this.setState({
+            notification: {
+              ...this.state.notification,
+              display: true,
+              severity: "success",
+              message: "Alterações salvas com sucesso.",
+            },
+          });
+          this.searchProcesses();
+        } else {
+          this.setState({
+            notification: {
+              ...this.state.notification,
+              display: true,
+              severity: "danger",
+              message: "Falha ao salvar alterações, tente novamente.",
+            },
+          });
+        }
+      })
+      .catch((err) => {
+        this.setState({
+          notification: {
+            ...this.state.notification,
+            display: true,
+            severity: "danger",
+            message: "Falha ao salvar alterações, tente novamente.",
+          },
+        });
+      });
+  }
+
+
   render() {
     return (
       <div>
@@ -385,6 +538,179 @@ class ContractDetails extends React.Component {
             </DialogActions>
           )}
         </Dialog>
+
+
+        <Dialog fullWidth maxWidth="lg" open={this.state.processesSearch.display} onClose={() => { this.setState({ processesSearch: { ...this.state.processesSearch, display: false } }); }} >
+          <DialogTitle>Vincular Processo</DialogTitle>
+          <DialogContent>
+            <DialogContentText>Selecione na tabela abaixo qual processo você deseja vincular a esse contrato. Os processos exibidos abaixo poderão tem vinculo com outros contratos.</DialogContentText>
+
+            <GridContainer>
+              <GridItem xs={12} sm={6} md={12} lg={12}>
+                {this.state.processesSearch.err && (
+                  <div style={{ textAlign: "center" }}>
+                    <h4>Não foi possível carregar os processos.</h4>
+                    <Button color="primary" onClick={(e) => this.searchProcessesToAttach()}>Tentar novamente</Button>
+                  </div>
+                )}
+
+                {this.state.processesSearch.loading && (
+                  <h1 style={{ textAlign: "center", position: "absolute", width: "100%", height: "100%", }}>
+                    <img style={{ height: "100px" }} src="/load-small.gif" alt="Carregando..." />
+                  </h1>
+                )}
+
+                {!this.state.processesSearch.err &&
+                  !this.state.processesSearch.loading && (
+                    <div>
+                      <Table>
+                        <TableHead>
+                          <TableRow>
+
+                            <TableCell style={{ textAlign: "center" }}>Unidade</TableCell>
+                            <TableCell style={{ textAlign: "center" }}>Nº do processo</TableCell>
+
+                            <TableCell style={{ textAlign: "center" }}>Nome do advogado
+                              <div style={{ display: "inline", verticalAlign: "top", padding: "0 5px", }}>
+                                <a href="#">
+                                  {(this.state.processesSearch.data.sortBy !== "lawyer_name" || this.state.processesSearch.data.sortDirection === "desc") && (
+                                    <ArrowDropDownIcon color={this.state.processesSearch.data.sortBy === "name" ? "" : "disabled"}
+                                      onClick={(e) => { this.searchProcessesToAttach(undefined, undefined, "lawyer_name", "asc"); }}
+                                    />
+                                  )}
+
+                                  {this.state.processesSearch.data.sortBy === "lawyer_name" && this.state.processesSearch.data.sortDirection === "asc" && (
+                                    <ArrowDropUpIcon color={this.state.processesSearch.data.sortBy === "name" ? "" : "disabled"}
+                                      onClick={(e) => { this.searchProcessesToAttach(undefined, undefined, "lawyer_name", "desc"); }}
+                                    />
+                                  )}
+                                </a>
+                              </div>
+                            </TableCell>
+
+                            <TableCell style={{ textAlign: "center" }}>Status</TableCell>
+
+                            <TableCell style={{ textAlign: "center" }}>Criado em
+                              <div style={{ display: "inline", verticalAlign: "top", padding: "0 5px", }}>
+                                <a href="#">
+                                  {(this.state.processesSearch.data.sortBy !== "created_at" || this.state.processesSearch.data.sortDirection === "desc") && (
+                                    <ArrowDropDownIcon color={this.state.processesSearch.data.sortBy === "created_at" ? "" : "disabled"}
+                                      onClick={(e) => { this.searchProcessesToAttach(undefined, undefined, "created_at", "asc"); }}
+                                    />
+                                  )}
+
+                                  {this.state.processesSearch.data.sortBy === "created_at" && this.state.processesSearch.data.sortDirection === "asc" && (
+                                    <ArrowDropUpIcon color={this.state.processesSearch.data.sortBy === "created_at" ? "" : "disabled"}
+                                      onClick={(e) => { this.searchProcessesToAttach(undefined, undefined, "created_at", "desc"); }}
+                                    />
+                                  )}
+                                </a>
+                              </div>
+                            </TableCell>
+
+                            <TableCell style={{ textAlign: "center" }}>Ações</TableCell>
+                          </TableRow>
+                        </TableHead>
+
+                        <TableBody>
+                          {this.state.processesSearch.data.processes && this.state.processesSearch.data.processes.length > 0 && this.state.processesSearch.data.processes.map(
+                            (prop, key) => {
+                              return (
+                                <TableRow key={key}>
+                                  <TableCell>
+                                    {(prop.companyId && this.props.companies &&
+                                      (this.props.companies.filter((e) => e.id === prop.companyId)[0] || {}).name) || ""}
+                                  </TableCell>
+                                  <TableCell>{prop.code}</TableCell>
+                                  <TableCell>{prop.lawyerName}</TableCell>
+                                  <TableCell style={{ textAlign: "center", }}>
+                                    {{
+                                      OPEN: "Em andamento",
+                                      CONCLUDED: "Concluído",
+                                    }[prop.status]}
+                                  </TableCell>
+
+                                  <TableCell style={{ textAlign: "center", }}><Moment date={prop.createdAt} format="DD/MM/YYYY" /></TableCell>
+
+                                  <TableCell style={{ textAlign: "center", }}>
+                                    <Tooltip title="Detalhes" arrow>
+                                      <span>
+                                        <Button justIcon round color="transparent" onClick={(e) => this.props.history.push("/admin/processes/" + prop.id)}>
+                                          <DescriptionOutlinedIcon />
+                                        </Button>
+                                      </span>
+                                    </Tooltip>
+
+                                    <Tooltip title="Selecionar" arrow>
+                                      <span>
+                                        <Button justIcon round color="transparent" onClick={(e) => this.attachToProcess(prop.id)}>
+                                          <CheckIcon />
+                                        </Button>
+                                      </span>
+                                    </Tooltip>
+
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            }
+                          )}
+                        </TableBody>
+                      </Table>
+                      {this.state.processesSearch.data.processes && this.state.processesSearch.data.processes.length === 0 && <h5 style={{ textAlign: "center" }}>Nenhum processo encontrado.</h5>}
+                    </div>)}
+
+                <GridContainer>
+                  <GridItem sm={12} style={{ textAlign: "right" }}>
+                    <div style={{ display: "inline-flex" }}>
+                      <Tooltip title="Início" arrow>
+                        <div>
+                          <Button justIcon round color="transparent" disabled={this.state.processesSearch.data.offset === 0}
+                            onClick={(e) => this.searchProcesses(0)}>
+                            <SkipPreviousIcon />
+                          </Button>
+                        </div>
+                      </Tooltip>
+                      <Tooltip title="Anterior" arrow>
+                        <div>
+                          <Button justIcon round color="transparent" disabled={this.state.processesSearch.data.offset === 0}
+                            onClick={(e) => this.searchProcesses(this.state.processesSearch.data.offset - this.state.processesSearch.data.limit)}>
+                            <NavigateBeforeIcon />
+                          </Button>
+                        </div>
+                      </Tooltip>
+
+                      <p>Exibindo{" "} {Math.min(this.state.processesSearch.data.total, this.state.processesSearch.data.offset + this.state.processesSearch.data.limit)}{" "} de {this.state.processesSearch.data.total}</p>
+
+                      <Tooltip title="Próxima" arrow>
+                        <div>
+                          <Button justIcon round color="transparent" disabled={this.state.processesSearch.data.offset + this.state.processesSearch.data.limit >= this.state.processesSearch.data.total}
+                            onClick={(e) => this.searchProcesses(this.state.processesSearch.data.offset + this.state.processesSearch.data.limit)} >
+                            <NavigateNextIcon />
+                          </Button>
+                        </div>
+                      </Tooltip>
+
+                      <Tooltip title="Última" arrow>
+                        <div>
+                          <Button justIcon round color="transparent" disabled={this.state.processesSearch.data.offset + this.state.processesSearch.data.limit >= this.state.processesSearch.data.total}
+                            onClick={(e) => this.searchProcesses(this.state.processesSearch.data.total - this.state.processesSearch.data.limit)}>
+                            <SkipNextIcon />
+                          </Button>
+                        </div>
+                      </Tooltip>
+                    </div>
+                  </GridItem>
+                </GridContainer>
+              </GridItem>
+            </GridContainer>
+
+
+          </DialogContent>
+          <DialogActions>
+            <Button color="transparent" autoFocus onClick={(ev) => this.setState({ processesSearch: { ...this.state.processesSearch, display: false } })}>Cancelar</Button>
+          </DialogActions>
+        </Dialog>
+
 
         {this.state.notFound && (
           <GridContainer>
@@ -570,7 +896,7 @@ class ContractDetails extends React.Component {
                         <a href={"/admin/attendances/" + this.state.data.attendanceId}
                           onClick={(e) => { e.preventDefault(); this.props.history.push("/admin/attendances/" + this.state.data.attendanceId) }}>
                           Ir para Atendimento vinculado
-                           </a>
+                        </a>
                         <span style={{ margin: "0 6px" }}>|</span>
                         <a href="#" onClick={(e) => this.setState({
                           dialog: {
@@ -703,8 +1029,8 @@ class ContractDetails extends React.Component {
                             <Table>
                               <TableHead>
                                 <TableRow>
-                                  <TableCell style={{ textAlign: "center", width: "20%", }}>Número do processo</TableCell>
-                                  <TableCell style={{ textAlign: "center", width: "30%", }} >Nome do advogado
+                                  <TableCell style={{ textAlign: "center", width: "15%", }}>Número do processo</TableCell>
+                                  <TableCell style={{ textAlign: "center", width: "20%", }} >Nome do advogado
                                     <div style={{ display: "inline", verticalAlign: "top", padding: "0 5px", }} >
                                       <a href="#">
                                         {(this.state.processes.data.sortBy !== "lawyer_name" || this.state.processes.data.sortDirection === "desc") &&
@@ -715,9 +1041,22 @@ class ContractDetails extends React.Component {
                                     </div>
                                   </TableCell>
 
-                                  <TableCell style={{ textAlign: "center" }}>Status</TableCell>
+                                  <TableCell style={{ textAlign: "center", width: "15%", }}>Ação</TableCell>
+                                  <TableCell style={{ textAlign: "center", width: "15%", }}>Vara</TableCell>
 
-                                  <TableCell style={{ textAlign: "center" }}>Criado em
+
+                                  <TableCell style={{ textAlign: "center", width: "10%" }}>Status
+                                    <div style={{ display: "inline", verticalAlign: "top", padding: "0 5px", }} >
+                                      <a href="#">
+                                        {(this.state.processes.data.sortBy !== "status" || this.state.processes.data.sortDirection === "desc") &&
+                                          (<ArrowDropDownIcon color={this.state.processes.data.sortBy === "name" ? "" : "disabled"} onClick={(e) => { this.searchProcesses(undefined, undefined, "status", "asc"); }} />)}
+                                        {this.state.processes.data.sortBy === "status" && this.state.processes.data.sortDirection === "asc" &&
+                                          (<ArrowDropUpIcon color={this.state.processes.data.sortBy === "name" ? "" : "disabled"} onClick={(e) => { this.searchProcesses(undefined, undefined, "status", "desc"); }} />)}
+                                      </a>
+                                    </div>
+                                  </TableCell>
+
+                                  <TableCell style={{ textAlign: "center", width: "15%" }}>Criado em
                                     <div style={{ display: "inline", verticalAlign: "top", padding: "0 5px", }} >
                                       <a href="#">
                                         {(this.state.processes.data.sortBy !== "created_at" || this.state.processes.data.sortDirection === "desc") &&
@@ -728,7 +1067,7 @@ class ContractDetails extends React.Component {
                                     </div>
                                   </TableCell>
 
-                                  <TableCell style={{ textAlign: "center" }}>Ações</TableCell>
+                                  <TableCell style={{ textAlign: "center", width: "10%" }}>Ações</TableCell>
                                 </TableRow>
                               </TableHead>
 
@@ -736,25 +1075,71 @@ class ContractDetails extends React.Component {
                                 {this.state.processes.data.processes && this.state.processes.data.processes.length > 0 && this.state.processes.data.processes.map((prop, key) => {
                                   return (
                                     <TableRow key={key}>
-                                      <TableCell style={{ width: "20%" }}>NNNNNNN-DD.AAAA.JTR.OOOO</TableCell>
-                                      <TableCell style={{ padding: "5px 16px", width: "30%", }}>{prop.lawyerName}</TableCell>
-                                      <TableCell style={{ padding: "5px 16px", textAlign: "center", }}>
+                                      <TableCell style={{ width: "15%" }}>{prop.code ? prop.code : <span style={{ fontStyle: "italic", color: "grey", fontWeight: "lighter", margin: "0 10px" }}>vazio</span>}</TableCell>
+                                      <TableCell style={{ padding: "5px 16px", width: "20%", }}>{prop.lawyerName}</TableCell>
+                                      <TableCell style={{ padding: "5px 16px", width: "15%", }}>{prop.action ? prop.action : <span style={{ fontStyle: "italic", color: "grey", fontWeight: "lighter", margin: "0 10px" }}>vazio</span>}</TableCell>
+                                      <TableCell style={{ padding: "5px 16px", width: "15%", }}>{prop.courtName ? prop.courtName : <span style={{ fontStyle: "italic", color: "grey", fontWeight: "lighter", margin: "0 10px" }}>vazio</span>}</TableCell>
+                                      <TableCell style={{ padding: "5px 16px", textAlign: "center", width: "10%" }}>
                                         {{
-                                          CURRENT: "Vigente",
-                                          FILED: "Arquivado",
+                                          OPEN: "Em andamento",
+                                          CONCLUDED: "Concluído",
                                         }[prop.status]}
                                       </TableCell>
 
-                                      <TableCell style={{ padding: "5px 16px", textAlign: "center", }} ><Moment date={prop.createdAt} format="DD/MM/YYYY" /></TableCell>
+                                      <TableCell style={{ padding: "5px 16px", textAlign: "center", width: "15%" }} ><Moment date={prop.createdAt} format="DD/MM/YYYY" /></TableCell>
 
-                                      <TableCell style={{ padding: "5px 16px", textAlign: "center", }} >
-                                        <Tooltip title="Detalhes" arrow>
+                                      <TableCell style={{ padding: "5px 16px", textAlign: "center", width: "10%" }} >
+                                        <Tooltip title="Ver processo" arrow>
                                           <span>
                                             <Button justIcon round color="transparent" onClick={(e) => this.props.history.push("/admin/processes/" + prop.id)}>
                                               <DescriptionOutlinedIcon />
                                             </Button>
                                           </span>
                                         </Tooltip>
+
+                                        <Tooltip title="Remover vínculo" arrow>
+                                          <span>
+                                            <Button justIcon round color="transparent" onClick={(e) => this.setState({
+                                              dialog: {
+                                                title: "Deseja remover o vínculo com o processo?",
+                                                fullWidth: false,
+                                                display: true,
+                                                message: "Cuidado! Remover o vínculo de um contracto a um processo pode causar inconsistências nos dados.",
+                                                actions: [
+                                                  {
+                                                    text: "Cancelar",
+                                                    color: "transparent",
+                                                    autoFocus: true,
+                                                    callback: () => {
+                                                      this.setState({
+                                                        dialog: {
+                                                          ...this.state.dialog,
+                                                          display: false
+                                                        }
+                                                      })
+                                                    }
+                                                  },
+                                                  {
+                                                    text: "Estou ciente e quero continuar",
+                                                    color: "danger",
+                                                    callback: () => {
+                                                      this.detachProcess(prop.id);
+                                                      this.setState({
+                                                        dialog: {
+                                                          ...this.state.dialog,
+                                                          display: false
+                                                        }
+                                                      });
+                                                    }
+                                                  }
+                                                ]
+                                              }
+                                            })}>
+                                              <ClearIcon />
+                                            </Button>
+                                          </span>
+                                        </Tooltip>
+
                                       </TableCell>
                                     </TableRow>
                                   );
@@ -840,7 +1225,10 @@ class ContractDetails extends React.Component {
                       </GridItem>
 
                       <GridItem xs={12} sm={6} md={12} lg={12}>
-                        <Button color="success" onClick={(e) => { /* todo */ }}>Vincular Processo</Button>
+                        <Button color="success" onClick={(e) => {
+                          this.setState({ processesSearch: { ...this.state.processesSearch, display: true, loading: true, err: false, } });
+                          this.searchProcessesToAttach();
+                        }}>Vincular Processo</Button>
                         <Button color="success" onClick={(e) => this.props.history.push("/admin/processes/create?contractId=" + this.state.data.id)}>Novo processo</Button>
                       </GridItem>
                     </GridContainer>

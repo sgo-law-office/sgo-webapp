@@ -65,6 +65,7 @@ class ContractCreate extends React.Component {
     this.state = {
       data: {
         attendanceId: null,
+        processId: null,
         customerId: null,
         companyId: null,
         lawyerId: null,
@@ -135,11 +136,13 @@ class ContractCreate extends React.Component {
   componentDidMount() {
     const query = new URLSearchParams(this.props.location.search);
     const attendanceId = query.get("atendanceId");
+    const processId = query.get("processId");
 
     this.setState({
       data: {
         ...this.state.data,
         companyId: this.props.account.companyId,
+        processId: processId
       },
     });
 
@@ -169,7 +172,7 @@ class ContractCreate extends React.Component {
               display: true,
               severity: "warning",
               message:
-                "Falha ao buscar atendimento, recarregue a página para tentar novamente, ou prossiga com a criação e anexe o atendimento posteriormente.",
+                "Falha ao buscar atendimento, recarregue a página para tentar novamente, ou prossiga com a criação e vincule o atendimento posteriormente.",
             },
             currentStep: 1,
           });
@@ -225,8 +228,7 @@ class ContractCreate extends React.Component {
           ...this.state.notification,
           display: true,
           severity: "danger",
-          message:
-            "Falha ao criar contrato, recarregue a página para tentar novamente.",
+          message: "Falha ao criar contrato, recarregue a página para tentar novamente.",
         },
       });
       return;
@@ -241,6 +243,7 @@ class ContractCreate extends React.Component {
           lawyerId: data.lawyerId,
           folderId: data.folderId,
           attendanceId: data.attendanceId,
+          processId: data.processId
         },
         {
           headers: {

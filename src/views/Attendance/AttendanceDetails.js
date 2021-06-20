@@ -126,6 +126,13 @@ class AttendanceDetails extends React.Component {
         message: "",
         severity: "",
       },
+
+      dialog: {
+        display: false,
+        title: "",
+        message: "",
+        actions: [],
+      },
     };
   }
 
@@ -267,7 +274,8 @@ class AttendanceDetails extends React.Component {
       limit: limit,
       sortBy: sortBy,
       sortDirection: sortDirection,
-      withoutAttendanceOnly: "true"
+      withoutAttendanceOnly: "true",
+      customerId: this.state.data.customerId
     };
 
     axios
@@ -396,7 +404,7 @@ class AttendanceDetails extends React.Component {
         <Dialog fullWidth maxWidth="md" open={this.state.contractSearch.display} onClose={() => { this.setState({ contractSearch: { ...this.state.contractSearch, display: false } }); }} >
           <DialogTitle>Vincular Contrato</DialogTitle>
           <DialogContent>
-            <DialogContentText>Selecione na tabela abaixo qual dos contratos você deseja vincular a ese atendimento. Os contratos exibidos abaixo não tem vinculo com nenhum outro atendimento.</DialogContentText>
+            <DialogContentText>Selecione na tabela abaixo qual dos contratos você deseja vincular a esse atendimento. Os contratos exibidos abaixo não tem vinculo com nenhum outro atendimento.</DialogContentText>
 
             <GridContainer>
               <GridItem xs={12} sm={6} md={12} lg={12}>
@@ -420,7 +428,7 @@ class AttendanceDetails extends React.Component {
                         <TableHead>
                           <TableRow>
                             <TableCell style={{ textAlign: "center", width: "40%", }}>Nome do advogado
-                                            <div style={{ display: "inline", verticalAlign: "top", padding: "0 5px", }}>
+                              <div style={{ display: "inline", verticalAlign: "top", padding: "0 5px", }}>
                                 <a href="#">
                                   {(this.state.contractSearch.data.sortBy !== "lawyer_name" || this.state.contractSearch.data.sortDirection === "desc") && (
                                     <ArrowDropDownIcon color={this.state.contractSearch.data.sortBy === "name" ? "" : "disabled"}
@@ -440,7 +448,7 @@ class AttendanceDetails extends React.Component {
                             <TableCell style={{ textAlign: "center" }}>Status</TableCell>
 
                             <TableCell style={{ textAlign: "center" }}>Criado em
-                                            <div style={{ display: "inline", verticalAlign: "top", padding: "0 5px", }}>
+                              <div style={{ display: "inline", verticalAlign: "top", padding: "0 5px", }}>
                                 <a href="#">
                                   {(this.state.contractSearch.data.sortBy !== "created_at" || this.state.contractSearch.data.sortDirection === "desc") && (
                                     <ArrowDropDownIcon color={this.state.contractSearch.data.sortBy === "created_at" ? "" : "disabled"}
@@ -554,6 +562,38 @@ class AttendanceDetails extends React.Component {
             <Button color="transparent" autoFocus onClick={(ev) => this.setState({ contractSearch: { ...this.state.contractSearch, display: false } })}>Cancelar</Button>
           </DialogActions>
         </Dialog>
+
+
+        <Dialog
+          fullWidth={this.state.dialog.fullWidth}
+          maxWidth={this.state.dialog.maxWidth}
+          open={this.state.dialog.display}
+          onClose={() => { this.setState({ dialog: { ...this.state.dialog, display: false } }); }}>
+          <DialogTitle>{this.state.dialog.title}</DialogTitle>
+          <DialogContent>
+            <DialogContentText>{this.state.dialog.message}</DialogContentText>
+          </DialogContent>
+          {this.state.dialog.actions && this.state.dialog.actions.length > 0 && (
+            <DialogActions>
+              {this.state.dialog.actions.map((e, i) => {
+                return (
+                  <Button
+                    key={i}
+                    color={e.color ? e.color : "transparent"}
+                    autoFocus={e.autoFocus}
+                    onClick={(ev) => {
+                      if (e.callback) {
+                        e.callback(ev);
+                      }
+                    }}>
+                    {e.text}
+                  </Button>
+                );
+              })}
+            </DialogActions>
+          )}
+        </Dialog>
+
 
         {this.state.notFound && (
           <GridContainer>
@@ -799,7 +839,42 @@ class AttendanceDetails extends React.Component {
 
                                                   <Tooltip title="Remover vínculo" arrow>
                                                     <span>
-                                                      <Button justIcon round color="transparent" onClick={(e) => this.dettachFromContract(prop.id)}>
+                                                      <Button justIcon round color="transparent" onClick={(e) => this.setState({
+                                                        dialog: {
+                                                          title: "Deseja remover o vínculo com o contrato?",
+                                                          fullWidth: false,
+                                                          display: true,
+                                                          message: "Cuidado! Remover o vínculo de um atendimento a um contrato pode causar inconsistências nos dados.",
+                                                          actions: [
+                                                            {
+                                                              text: "Cancelar",
+                                                              color: "transparent",
+                                                              autoFocus: true,
+                                                              callback: () => {
+                                                                this.setState({
+                                                                  dialog: {
+                                                                    ...this.state.dialog,
+                                                                    display: false
+                                                                  }
+                                                                })
+                                                              }
+                                                            },
+                                                            {
+                                                              text: "Estou ciente e quero continuar",
+                                                              color: "danger",
+                                                              callback: () => {
+                                                                this.dettachFromContract(prop.id)
+                                                                this.setState({
+                                                                  dialog: {
+                                                                    ...this.state.dialog,
+                                                                    display: false
+                                                                  }
+                                                                });
+                                                              }
+                                                            }
+                                                          ]
+                                                        }
+                                                      })}>
                                                         <ClearIcon />
                                                       </Button>
                                                     </span>

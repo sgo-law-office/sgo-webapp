@@ -643,7 +643,7 @@ class ProcessSearch extends React.Component {
                     {this.state.data.processes && this.state.data.processes.length > 0 && this.state.data.processes.map((prop, key) => {
                       return (
                         <TableRow key={key}>
-                          <TableCell style={{ padding: "5px 16px", width: "15%" }} >{prop.code}</TableCell>
+                          <TableCell style={{ padding: "5px 16px", width: "15%" }} >{prop.code ? prop.code : <span style={{ fontStyle: "italic", color: "grey", fontWeight: "lighter" }}>vazio</span>}</TableCell>
                           <TableCell style={{ padding: "5px 16px", width: "15%" }} >{prop.customerName}{" "}<ElderTooltip birthDate={prop.customerBirthDate} /></TableCell>
 
                           <Hidden only={["xs", "sm"]}>
@@ -651,11 +651,11 @@ class ProcessSearch extends React.Component {
                           </Hidden>
 
                           <Hidden only={["xs"]}>
-                            <TableCell style={{ padding: "5px 16px", width: "15%" }} > {prop.action}</TableCell>
+                            <TableCell style={{ padding: "5px 16px", width: "15%" }} > {prop.action ? prop.action : <span style={{ fontStyle: "italic", color: "grey", fontWeight: "lighter" }}>vazio</span>}</TableCell>
                           </Hidden>
 
                           <Hidden only={["xs", "sm"]}>
-                            <TableCell style={{ padding: "5px 16px", width: "15%" }} > {prop.courtName}</TableCell>
+                            <TableCell style={{ padding: "5px 16px", width: "15%" }} > {prop.courtName ? prop.courtName : <span style={{ fontStyle: "italic", color: "grey", fontWeight: "lighter" }}>vazio</span>}</TableCell>
                           </Hidden>
 
                           <Hidden only={["xs"]}>
