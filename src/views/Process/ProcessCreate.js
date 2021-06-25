@@ -32,6 +32,7 @@ import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import SkipNextIcon from '@material-ui/icons/SkipNext';
 import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
 
+import Autocomplete from '@material-ui/lab/Autocomplete';
 
 import Axios from "axios";
 import {
@@ -134,6 +135,9 @@ class ProcessCreate extends React.Component {
           offset: 0,
           limit: 10,
           total: 0
+        },
+        query: {
+          name: ""
         }
       },
 
@@ -192,7 +196,7 @@ class ProcessCreate extends React.Component {
         });
     } else {
       this.setState({
-        currentStep: 1,
+        currentStep: 4,
       });
     }
   }
@@ -1175,101 +1179,39 @@ class ProcessCreate extends React.Component {
             <GridContainer>
               <GridItem xs={12} sm={1} md={2} lg={3}></GridItem>
 
-
               <GridItem xs={10} sm={9} md={8} lg={6}>
-                <CustomInput
-                  labelText="Ação"
-                  formControlProps={{ fullWidth: true }}
-                  inputProps={{
-                    value: this.state.data.action,
-                    onChange: e => this.setState({
-                      data: { ...this.state.data, action: e.target.value },
-                      actionSearch: { ...this.state.actionSearch, pagination: { ...this.state.actionSearch.pagination, offset: 0 } }
-                    })
-                  }}
-                />
+
+                <CustomInput formControlProps={{ fullWidth: true }}>
+                  {this.props.processActions && this.props.processActions.data &&
+                    <Autocomplete
+                      freeSolo
+                      options={this.props.processActions.data.filter(el => el.name)}
+                      getOptionLabel={(option) => { return option.name || ""; }}
+                      style={{ width: "100%" }}
+                      value={this.state.data.action}
+                      disableClearable={true}
+                      onChange={(e, newValue) => {
+                        if (!newValue) return;
+                        this.setState({
+                          data: { ...this.state.data, action: newValue.id ? newValue.name : newValue },
+                          actionSearch: { ...this.state.actionSearch, query: { name: newValue.id ? newValue.name : newValue } }
+                        })
+                      }}
+                      inputValue={this.state.actionSearch.query.name}
+                      onInputChange={(e, newValue) => {
+                        if (!newValue) return;
+                        this.setState({
+                          actionSearch: { ...this.state.actionSearch, query: { name: newValue.id ? newValue.name : newValue } }
+                        })
+                      }}
+                      renderInput={(params) => <TextField {...params} label="Ação" onBlur={e => this.setState({
+                        data: { ...this.state.data, action: this.state.actionSearch.query.name }
+                      })} />}
+                    />}
+                </CustomInput>
               </GridItem>
+
             </GridContainer>
-
-            <GridContainer>
-              <GridItem xs={12} sm={1} md={2} lg={3}></GridItem>
-              <GridItem xs={10} sm={9} md={8} lg={6} style={{ overflowY: "scroll", borderBottom: "1px solid #cacaca", maxHeight: "300px", height: "300px" }}>
-                <Table>
-                  <TableBody>
-                    {this.props.processActions && this.props.processActions.data && this.props.processActions.data.length > 0 && this.props.processActions.data
-                      .filter(el => this.state.data.action.trim().length == 0 || el.name.toLowerCase().search(this.state.data.action.toLowerCase().trim()) != -1)
-                      .slice(this.state.actionSearch.pagination.offset, this.state.actionSearch.pagination.offset + this.state.actionSearch.pagination.limit)
-                      .map((prop, key) => {
-                        return (
-                          <TableRow key={key}>
-                            <TableCell style={{ padding: "5px 5px", width: "70%" }} > {prop.name} </TableCell>
-                            <TableCell style={{ textAlign: "center" }}>
-                              <Tooltip title="Selecionar" arrow>
-                                <span>
-                                  <Button justIcon round color="transparent" onClick={(e) => this.setState({ data: { ...this.state.data, action: prop.name } })} >
-                                    <CheckIcon />
-                                  </Button>
-                                </span>
-                              </Tooltip>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                  </TableBody>
-                </Table>
-              </GridItem>
-            </GridContainer>
-
-            <GridContainer>
-              <GridItem xs={12} sm={1} md={2} lg={3}></GridItem>
-              <GridItem xs={10} sm={9} md={8} lg={6} >
-                <GridContainer>
-                  <GridItem sm={12} style={{ textAlign: "right" }}>
-                    <div style={{ display: "inline-flex" }}>
-
-                      <Tooltip title="Início" arrow>
-                        <div>
-                          <Button justIcon round color="transparent"
-                            disabled={this.state.actionSearch.pagination.offset == 0}
-                            onClick={e => this.setState({ actionSearch: { ...this.state.actionSearch, pagination: { ...this.state.actionSearch.pagination, offset: 0 } } })}>
-                            <SkipPreviousIcon /></Button>
-                        </div>
-                      </Tooltip>
-                      <Tooltip title="Anterior" arrow>
-                        <div>
-                          <Button justIcon round color="transparent"
-                            disabled={this.state.actionSearch.pagination.offset == 0}
-                            onClick={e => this.setState({ actionSearch: { ...this.state.actionSearch, pagination: { ...this.state.actionSearch.pagination, offset: this.state.actionSearch.pagination.offset - this.state.actionSearch.pagination.limit } } })}>
-                            <NavigateBeforeIcon /></Button>
-                        </div>
-                      </Tooltip>
-
-                      <p>Exibindo {Math.min(this.state.actionSearch.pagination.total, this.state.actionSearch.pagination.offset + this.state.actionSearch.pagination.limit)} de {this.state.actionSearch.pagination.total}</p>
-
-                      <Tooltip title="Próxima" arrow>
-                        <div>
-                          <Button justIcon round color="transparent"
-                            disabled={this.state.actionSearch.pagination.offset + this.state.actionSearch.pagination.limit >= this.state.actionSearch.pagination.total}
-                            onClick={e => this.setState({ actionSearch: { ...this.state.actionSearch, pagination: { ...this.state.actionSearch.pagination, offset: this.state.actionSearch.pagination.offset + this.state.actionSearch.pagination.limit } } })}>
-                            <NavigateNextIcon /></Button>
-                        </div>
-                      </Tooltip>
-
-                      <Tooltip title="Última" arrow>
-                        <div>
-                          <Button justIcon round color="transparent"
-                            disabled={this.state.actionSearch.pagination.offset + this.state.actionSearch.pagination.limit >= this.state.actionSearch.pagination.total}
-                            onClick={e => this.setState({ actionSearch: { ...this.state.actionSearch, pagination: { ...this.state.actionSearch.pagination, offset: this.state.actionSearch.pagination.total - this.state.actionSearch.pagination.limit } } })}>
-                            <SkipNextIcon /></Button>
-                        </div>
-                      </Tooltip>
-
-                    </div>
-                  </GridItem>
-                </GridContainer>
-              </GridItem>
-            </GridContainer>
-
 
             <Button onClick={(e) => this.setState({ currentStep: 4 })}>
               Voltar
