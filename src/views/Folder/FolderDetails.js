@@ -128,6 +128,7 @@ class FolderDetails extends React.Component {
       lastUpdatedBy: null,
       customerName: "",
       customerBirthDate: null,
+      customerDeathDate: null,
       createdByName: "",
       lastUpdatedByName: "",
     };
@@ -413,6 +414,7 @@ class FolderDetails extends React.Component {
                           <small>
                             <ElderTooltip
                               birthDate={this.state.data.customerBirthDate}
+                              deathDate={this.state.data.customerDeathDate}
                             />
                           </small>
                         </span>

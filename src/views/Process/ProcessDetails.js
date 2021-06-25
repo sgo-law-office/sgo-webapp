@@ -208,6 +208,7 @@ class ProcessDetails extends React.Component {
       customerId: null,
       customerName: "",
       customerBirthDate: null,
+      customerDeathDate: null,
 
       ownerLawyerId: null,
       lawyerName: "",
@@ -1417,7 +1418,7 @@ class ProcessDetails extends React.Component {
                           style={{ cursor: "pointer", fontSize: "1.5em", marginLeft: "10px", }} >
                           {this.state.data.customerName}
                           <small>
-                            <ElderTooltip birthDate={this.state.data.customerBirthDate} />
+                            <ElderTooltip birthDate={this.state.data.customerBirthDate} deathDate={this.state.data.customerDeathDate} />
                           </small>
                         </span>
                       </Tooltip>

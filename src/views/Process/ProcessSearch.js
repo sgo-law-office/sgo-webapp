@@ -644,7 +644,7 @@ class ProcessSearch extends React.Component {
                       return (
                         <TableRow key={key}>
                           <TableCell style={{ padding: "5px 16px", width: "15%" }} >{prop.code ? prop.code : <span style={{ fontStyle: "italic", color: "grey", fontWeight: "lighter" }}>vazio</span>}</TableCell>
-                          <TableCell style={{ padding: "5px 16px", width: "15%" }} >{prop.customerName}{" "}<ElderTooltip birthDate={prop.customerBirthDate} /></TableCell>
+                          <TableCell style={{ padding: "5px 16px", width: "15%" }} >{prop.customerName}{" "}<ElderTooltip birthDate={prop.customerBirthDate} deathDate={prop.customerDeathDate} /></TableCell>
 
                           <Hidden only={["xs", "sm"]}>
                             <TableCell style={{ padding: "5px 16px", width: "15%" }} > {prop.lawyerName}</TableCell>

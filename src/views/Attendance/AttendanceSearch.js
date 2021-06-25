@@ -639,6 +639,7 @@ class AttendanceSearch extends React.Component {
                               {prop.customerName}{" "}
                               <ElderTooltip
                                 birthDate={prop.customerBirthDate}
+                                deathDate={prop.customerDeathDate}
                               />
                             </TableCell>
                             <Hidden only={["xs"]}>

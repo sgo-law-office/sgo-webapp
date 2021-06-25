@@ -690,6 +690,7 @@ class FolderPage extends React.Component {
                               {prop.customerName}{" "}
                               <ElderTooltip
                                 birthDate={prop.customerBirthDate}
+                                deathDate={prop.customerDeathDate}
                               />
                             </TableCell>
                             <TableCell style={{ textAlign: "center" }}>

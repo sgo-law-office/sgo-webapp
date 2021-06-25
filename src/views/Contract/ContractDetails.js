@@ -148,6 +148,7 @@ class ContractDetails extends React.Component {
       customerId: null,
       customerName: "",
       customerBirthDate: null,
+      customerDeathDate: null,
 
       lawyerId: null,
       lawyerName: "",
@@ -754,6 +755,7 @@ class ContractDetails extends React.Component {
                           <small>
                             <ElderTooltip
                               birthDate={this.state.data.customerBirthDate}
+                              deathDate={this.state.data.customerDeathDate}
                             />
                           </small>
                         </span>

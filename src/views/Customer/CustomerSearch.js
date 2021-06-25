@@ -444,7 +444,7 @@ class CustomerSearch extends React.Component {
                     {this.state.data.customers && this.state.data.customers.length > 0 && this.state.data.customers.map((prop, key) => {
                       return (
                         <TableRow key={key}>
-                          <TableCell style={{ padding: "5px 16px", width: "40%" }}>{prop.name} <ElderTooltip birthDate={prop.birthDate} /> </TableCell>
+                          <TableCell style={{ padding: "5px 16px", width: "40%" }}>{prop.name} <ElderTooltip birthDate={prop.birthDate} deathDate={prop.deathDate} /> </TableCell>
                           <Hidden only={["xs", "sm", "md"]}><TableCell style={{ padding: "5px 16px", textAlign: "center" }}>{prop.active ? "Ativo" : "Desativado"}</TableCell></Hidden>
                           <Hidden only={["xs", "sm", "md"]}><TableCell style={{ padding: "5px 16px", textAlign: "center" }}><Moment date={prop.createdAt} format="DD/MM/YYYY" /></TableCell></Hidden>
                           <TableCell style={{ padding: "5px 16px", textAlign: "center" }}>

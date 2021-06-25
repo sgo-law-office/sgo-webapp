@@ -391,7 +391,7 @@ class FolderCreate extends React.Component {
                               style={{ padding: "5px 16px", width: "70%" }}
                             >
                               {prop.name}{" "}
-                              <ElderTooltip birthDate={prop.birthDate} />
+                              <ElderTooltip birthDate={prop.birthDate} deathDate={prop.deathDate} />
                             </TableCell>
                             <TableCell style={{ textAlign: "center" }}>
                               <Tooltip title="Selecionar" arrow>

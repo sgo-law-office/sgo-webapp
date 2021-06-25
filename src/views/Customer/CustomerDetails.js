@@ -60,7 +60,6 @@ class CustomerDetails extends React.Component {
         companyId: false,
         name: false,
         mail: false,
-        birthDate: false,
         taxPayerIdentifier: false,
         idCard: false,
         phones: false
@@ -89,6 +88,7 @@ class CustomerDetails extends React.Component {
       name: "",
       mail: "",
       birthDate: "",
+      deathDate: "",
       taxPayerIdentifier: "",
       idCard: "",
       addresses: [],
@@ -329,10 +329,77 @@ class CustomerDetails extends React.Component {
     }
   }
 
-  editUser() {
+  editUser(updateStatusWhenDeathDateNotNull) {
     if (this.isValidToEdit(this.state.data)) {
       const payload = this.state.data;
       payload.addresses = payload.addresses.filter((a) => a.streetName.trim().length > 0);
+
+      if (updateStatusWhenDeathDateNotNull === undefined) {
+        if (this.state.data.active && this.state.data.deathDate) {
+          this.setState({
+            dialog: {
+              title: "Deseja invativar o cliente?",
+              display: true,
+              fullWidth: true,
+              maxWidth: "md",
+              message: (<div>
+                <span>Você informou uma data de falecimento, para evitar constangimentos é indicado que o cliente seja desativado.</span>
+                <p>Cuidado! Ao desativar um cliente não será possível efetuar novas ações relacionadas ao mesmo.</p>
+              </div>),
+              actions: [
+                {
+                  text: "Cancelar",
+                  color: "transparent",
+                  autoFocus: true,
+                  callback: () => {
+                    this.setState({
+                      dialog: {
+                        ...this.state.dialog,
+                        display: false
+                      }
+                    })
+                  }
+                },
+                {
+                  text: "Continuar sem desativar",
+                  color: "warning",
+                  callback: () => {
+                    this.editUser(false);
+
+                    this.setState({
+                      dialog: {
+                        ...this.state.dialog,
+                        display: false
+                      }
+                    });
+                  }
+                },
+                {
+                  text: "Estou ciente e quero continuar",
+                  color: "danger",
+                  callback: () => {
+                    this.editUser(true);
+
+                    this.setState({
+                      dialog: {
+                        ...this.state.dialog,
+                        display: false
+                      }
+                    });
+                  }
+                }
+              ]
+            }
+          });
+
+          return;
+        }
+      } else if (updateStatusWhenDeathDateNotNull) {
+        payload.active = false;
+      }
+
+
+
       axios.put("/api/customers/" + this.state.idFromUrl, payload, {
         headers: {
           'Content-Type': 'application/json'
@@ -349,6 +416,10 @@ class CustomerDetails extends React.Component {
                 display: true,
                 severity: "success",
                 message: "Alterações salvas com sucesso."
+              },
+              dialog: {
+                ...this.state.dialog,
+                display: false
               }
             });
 
@@ -531,7 +602,7 @@ class CustomerDetails extends React.Component {
                             <CustomInput formControlProps={{ fullWidth: true }}>
                               <div style={{ textAlign: "center", fontSize: "1.5em" }}>
 
-                                <ElderTooltip birthDate={this.state.data.birthDate} />
+                                <ElderTooltip birthDate={this.state.data.birthDate} deathDate={this.state.data.deathDate} />
 
                                 {this.state.data.active !== null && <div style={{ display: "inline" }}>
                                   <small style={{ marginLeft: "30px" }}>Status </small>
@@ -554,7 +625,7 @@ class CustomerDetails extends React.Component {
                         <h3><small>Dados pessoais</small></h3>
                         <GridContainer>
 
-                          <GridItem xs={12} sm={12} md={6} lg={6}>
+                          <GridItem xs={12} sm={12} md={6} lg={4}>
                             <CustomInput id="name" labelText="Nome" formControlProps={{ fullWidth: true }} error={this.state.validations.name}
                               inputProps={{
                                 disabled: !this.state.editing,
@@ -564,12 +635,24 @@ class CustomerDetails extends React.Component {
                               }} />
                           </GridItem>
 
-                          <GridItem xs={12} sm={12} md={6} lg={6}>
+                          <GridItem xs={12} sm={12} md={6} lg={4}>
                             <CustomInput id="mail" labelText="E-mail" formControlProps={{ fullWidth: true }}
                               inputProps={{
                                 disabled: !this.state.editing,
                                 value: this.state.data.mail,
                                 onChange: (e) => this.setState({ data: { ...this.state.data, mail: e.target.value } })
+                              }} />
+                          </GridItem>
+
+                          <GridItem xs={12} sm={12} md={6} lg={4}>
+                            <CustomInput id="birthdate" labelText="Data de Nascimento" labelProps={{ shrink: true }} formControlProps={{ fullWidth: true }}
+                              error={this.state.validations.birthDate}
+                              inputProps={{
+                                type: "date",
+                                disabled: !this.state.editing,
+                                value: this.state.data.birthDate,
+                                onChange: (e) => this.setState({ data: { ...this.state.data, birthDate: e.target.value } }),
+                                onFocus: () => this.setState({ validations: { ...this.state.validations, birthDate: false } })
                               }} />
                           </GridItem>
 
@@ -594,14 +677,12 @@ class CustomerDetails extends React.Component {
                           </GridItem>
 
                           <GridItem xs={12} sm={12} md={6} lg={4}>
-                            <CustomInput id="birthdate" labelText="Data de Nascimento" labelProps={{ shrink: true }} formControlProps={{ fullWidth: true }}
-                              error={this.state.validations.birthDate}
+                            <CustomInput id="deathdate" labelText="Data de Falecimento" labelProps={{ shrink: true }} formControlProps={{ fullWidth: true }}
                               inputProps={{
                                 type: "date",
                                 disabled: !this.state.editing,
-                                value: this.state.data.birthDate,
-                                onChange: (e) => this.setState({ data: { ...this.state.data, birthDate: e.target.value } }),
-                                onFocus: () => this.setState({ validations: { ...this.state.validations, birthDate: false } })
+                                value: this.state.data.deathDate,
+                                onChange: (e) => this.setState({ data: { ...this.state.data, deathDate: e.target.value } })
                               }} />
                           </GridItem>
 
@@ -762,7 +843,7 @@ class CustomerDetails extends React.Component {
                                             });
                                           }}>
                                           <DeleteIcon /> Remover telefone
-                                      </Button>
+                                        </Button>
                                       </Hidden>
                                     </CustomInput>
 
@@ -953,12 +1034,6 @@ class CustomerDetails extends React.Component {
                               color: "danger",
                               callback: () => {
                                 this.editUser();
-                                this.setState({
-                                  dialog: {
-                                    ...this.state.dialog,
-                                    display: false
-                                  }
-                                });
                               }
                             }
                           ]

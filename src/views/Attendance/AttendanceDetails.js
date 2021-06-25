@@ -622,7 +622,7 @@ class AttendanceDetails extends React.Component {
                                 <span onClick={(e) => { e.preventDefault(); this.props.history.push("/admin/customers/" + this.state.data.customerId); }}
                                   style={{ cursor: "pointer", fontSize: "1.5em", marginLeft: "10px", }}>
                                   {this.state.data.customerName}
-                                  <small><ElderTooltip birthDate={this.state.data.customerBirthDate} /></small>
+                                  <small><ElderTooltip birthDate={this.state.data.customerBirthDate} deathDate={this.state.data.customerDeathDate} /></small>
                                 </span>
                               </Tooltip>
                             </CustomInput>
