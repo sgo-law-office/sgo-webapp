@@ -196,7 +196,7 @@ class ProcessCreate extends React.Component {
         });
     } else {
       this.setState({
-        currentStep: 4,
+        currentStep: 1,
       });
     }
   }
