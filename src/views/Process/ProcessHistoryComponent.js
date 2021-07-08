@@ -444,6 +444,8 @@ class ProcessHistoryComponent extends React.Component {
                                     {e.metadata.lawyerName ? " do processo." : "Removeu um advogado do processo."}
                                   </div>}
 
+                                  {e.value === 'UPDATE_COUNTERPARTS' && <div>Alterou a parte contrária do processo.</div>}
+
 
                                   {(e.value === 'UPDATE_CODE' || e.value === 'UPDATE_ACTION' || e.value === 'UPDATE_COURT') && <div>
                                     Atualizou {{"UPDATE_CODE" : "o número ", "UPDATE_ACTION": "a ação", "UPDATE_COURT": "a vara" }[e.value]} do processo de

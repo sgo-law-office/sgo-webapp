@@ -67,6 +67,7 @@ import ProcessHistoryComponent from "./ProcessHistoryComponent";
 import { fetchCourts } from "store/actions";
 import { fetchProcessActions } from "store/actions";
 import { Folder } from "@material-ui/icons";
+import ProcessCounterpartsComponent from "./ProcessCounterpartsComponent";
 //import ContractReportComponent from "./ContractReportComponent";
 
 const axios = Axios.create();
@@ -213,6 +214,8 @@ class ProcessDetails extends React.Component {
       ownerLawyerId: null,
       lawyerName: "",
       otherLawyers: [],
+
+      counterparts: [],
 
       createdByName: "",
       lastUpdatedByName: "",
@@ -1706,6 +1709,7 @@ class ProcessDetails extends React.Component {
                       this.setState({ contracts: { ...this.state.contracts, init: true } });
                     }}
                   />
+                  <Tab label="Parte contrária" />
                 </Tabs>
                 <Divider style={{ width: "100%" }} />
 
@@ -1932,6 +1936,15 @@ class ProcessDetails extends React.Component {
                       </GridItem>
                     </GridContainer>
                   )}
+                </div>
+
+                <div role="tabpanel" hidden={this.state.tabs.value !== 2}>
+                  {this.state.data.id && this.state.tabs.value === 2 &&
+                    <ProcessCounterpartsComponent
+                      processId={this.state.data.id}
+                      counterpartsData={this.state.data.counterparts}
+                      loadCallback={() => this.loadProcess()}
+                    />}
                 </div>
 
               </CardBody>

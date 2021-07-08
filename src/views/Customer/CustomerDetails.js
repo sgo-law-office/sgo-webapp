@@ -657,7 +657,7 @@ class CustomerDetails extends React.Component {
                           </GridItem>
 
                           <GridItem xs={12} sm={12} md={6} lg={4}>
-                            <CustomInput id="cpf" labelText="CPF" formControlProps={{ fullWidth: true }} error={this.state.validations.taxPayerIdentifier}
+                            <CustomInput id="cpf" labelText="CPF/CNPJ" formControlProps={{ fullWidth: true }} error={this.state.validations.taxPayerIdentifier}
                               inputProps={{
                                 disabled: !this.state.editing,
                                 value: this.state.data.taxPayerIdentifier,
