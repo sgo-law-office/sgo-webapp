@@ -96,74 +96,40 @@ class ProcessCounterpartsComponent extends React.Component {
     };
   }
 
-
-  loadProcessHistory() {
-    if (this.props.loadCallback) {
-      this.props.loadCallback();
-    }
-  }
-
-  createProcessHistory() {
-    if (this.isValidToCreate(this.state.add.data)) {
-      axios.post("/api/processes/" + this.props.processId + ":history",
-        { ...this.state.add.data },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        })
-        .then((res) => {
-          if (res.status === 201) {
-            this.setState({
-              add: {
-                ...this.state.add,
-                display: false,
-              },
-            });
-            this.loadProcessHistory();
-
-          } else {
-            this.setState({
-              notification: {
-                ...this.state.notification,
-                display: true,
-                severity: "danger",
-                message: "Falha ao criar registro, tente novamente.",
-              },
-            });
+  saveChanges(overrideData) {
+    axios.put("/api/processes/" + this.props.processId + "/counterparts", (overrideData ? overrideData : this.state.counterparts),
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        if (res.status === 200) {
+          if (this.props.loadCallback) {
+            this.props.loadCallback();
           }
-        })
-        .catch((err) => {
+
+        } else {
           this.setState({
             notification: {
               ...this.state.notification,
               display: true,
               severity: "danger",
-              message: "Falha ao criar registro, tente novamente.",
+              message: "Falha ao salvar alterações, tente novamente.",
             },
           });
+        }
+      })
+      .catch((err) => {
+        this.setState({
+          notification: {
+            ...this.state.notification,
+            display: true,
+            severity: "danger",
+            message: "Falha ao salvar alterações, tente novamente.",
+          },
         });
-    }
-  }
-
-  isValidToCreate(data) {
-    if (!data.type || !data.value) {
-      return false;
-    }
-
-    if (data.type === "MANUAL" && data.value === "INPUT" && data.description.trim().length === 0) {
-      this.setState({
-        notification: {
-          ...this.state.notification,
-          display: true,
-          severity: "danger",
-          message: "A descrição é obrigatório para adicionar um registro manual.",
-        },
       });
-      return false;
-    }
-
-    return true;
   }
 
   render() {
@@ -213,331 +179,422 @@ class ProcessCounterpartsComponent extends React.Component {
           </div>
         )}
 
-        {this.state.counterparts && this.state.counterparts.length > 0 && this.state.counterparts.map((el, i) => {
-          return (
-            <div key={i} style={{ width: "100%" }}>
-              <GridContainer style={{ borderLeft: "2px solid #cacaca" }}>
-                <h4 style={{ paddingLeft: "30px", marginBottom: "0", width: "100%" }}>Dados pessoais</h4>
+        <div style={{ margin: "10px 20px" }}>
 
-                <GridItem xs={12} sm={12} md={6} lg={4}>
-                  <CustomInput formControlProps={{ fullWidth: true }}
-                    labelText="Nome"
-                    inputProps={{
-                      value: el.name,
-                      onChange: (e) =>
-                        this.setState({
-                          touched: true,
-                          counterparts: [
-                            ...this.state.counterparts.slice(0, i),
-                            {
-                              ...this.state.counterparts[i],
-                              name: e.target.value
-                            },
-                            ...this.state.counterparts.slice(i + 1),
-                          ]
-                        })
-                    }} />
-                </GridItem>
+          {this.state.counterparts && this.state.counterparts.length > 0 && this.state.counterparts.map((el, i) => {
+            return (
+              <div key={i} style={{ width: "100%" }}>
+                <GridContainer style={{ borderLeft: "2px solid #cacaca" }}>
+                  <h4 style={{ paddingLeft: "30px", marginBottom: "0", width: "100%" }}>Dados pessoais
 
-                <GridItem xs={12} sm={12} md={6} lg={4}>
-                  <CustomInput formControlProps={{ fullWidth: true }}
-                    labelText="E-mail"
-                    inputProps={{
-                      value: el.mail,
-                      onChange: (e) =>
-                        this.setState({
-                          touched: true,
-                          counterparts: [
-                            ...this.state.counterparts.slice(0, i),
-                            {
-                              ...this.state.counterparts[i],
-                              mail: e.target.value
-                            },
-                            ...this.state.counterparts.slice(i + 1),
-                          ]
-                        })
-                    }} />
-                </GridItem>
+                    <div style={{ float: "right" }}>
+                      <Tooltip title="Remover parte contrária" arrow>
+                        <IconButton size="large"
+                          onClick={e =>
+                            this.setState({
+                              dialog: {
+                                title: "Deseja continuar?",
+                                fullWidth: false,
+                                display: true,
+                                message: "Não é possível desfazer essa ação, deseja continuar com a remoção da parte contrária?",
+                                actions: [
+                                  {
+                                    text: "Cancelar",
+                                    color: "transparent",
+                                    autoFocus: true,
+                                    callback: () => {
+                                      this.setState({
+                                        dialog: {
+                                          ...this.state.dialog,
+                                          display: false,
+                                        },
+                                      });
+                                    },
+                                  },
+                                  {
+                                    text: "Estou ciente e quero continuar",
+                                    color: "danger",
+                                    callback: () => {
+                                      this.setState({
+                                        dialog: {
+                                          ...this.state.dialog,
+                                          display: false,
+                                        },
 
-                <GridItem xs={12} sm={12} md={6} lg={4}>
-                  <CustomInput
-                    formControlProps={{ fullWidth: true }}
-                    labelProps={{ shrink: true }}
-                    labelText="Data de Nascimento"
-                    inputProps={{
-                      type: "date",
-                      value: el.birthDate,
-                      onChange: (e) =>
-                        this.setState({
-                          touched: true,
-                          counterparts: [
-                            ...this.state.counterparts.slice(0, i),
-                            {
-                              ...this.state.counterparts[i],
-                              birthDate: e.target.value
-                            },
-                            ...this.state.counterparts.slice(i + 1),
-                          ]
-                        })
-                    }} />
-                </GridItem>
+                                        counterparts: [
+                                          ...this.state.counterparts.slice(0, i),
+                                          ...this.state.counterparts.slice(i + 1)
+                                        ]
+                                      })
+                                      this.saveChanges([
+                                        ...this.state.counterparts.slice(0, i),
+                                        ...this.state.counterparts.slice(i + 1)
+                                      ]);
+                                    },
+                                  },
+                                ],
+                              },
+                            })
+                          }>
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </div>
+                  </h4>
 
-                <GridItem xs={12} sm={12} md={6} lg={4}>
-                  <CustomInput formControlProps={{ fullWidth: true }}
-                    labelText="CPF/CNPJ"
-                    inputProps={{
-                      value: el.taxPayerIdentifier,
-                      onChange: (e) =>
-                        this.setState({
-                          touched: true,
-                          counterparts: [
-                            ...this.state.counterparts.slice(0, i),
-                            {
-                              ...this.state.counterparts[i],
-                              taxPayerIdentifier: e.target.value
-                            },
-                            ...this.state.counterparts.slice(i + 1),
-                          ]
-                        })
-                    }} />
-                </GridItem>
-
-                <GridItem xs={12} sm={12} md={6} lg={4}>
-                  <CustomInput formControlProps={{ fullWidth: true }}
-                    labelText="RG"
-                    inputProps={{
-                      value: el.idCard,
-                      onChange: (e) =>
-                        this.setState({
-                          touched: true,
-                          counterparts: [
-                            ...this.state.counterparts.slice(0, i),
-                            {
-                              ...this.state.counterparts[i],
-                              idCard: e.target.value
-                            },
-                            ...this.state.counterparts.slice(i + 1),
-                          ]
-                        })
-                    }} />
-                </GridItem>
-
-                <GridItem xs={12} sm={12} md={6} lg={4}>
-                  <CustomInput
-                    formControlProps={{ fullWidth: true }}
-                    labelProps={{ shrink: true }}
-                    labelText="Data de Falecimento"
-                    inputProps={{
-                      type: "date",
-                      value: el.deathDate,
-                      onChange: (e) =>
-                        this.setState({
-                          touched: true,
-                          counterparts: [
-                            ...this.state.counterparts.slice(0, i),
-                            {
-                              ...this.state.counterparts[i],
-                              deathDate: e.target.value
-                            },
-                            ...this.state.counterparts.slice(i + 1),
-                          ]
-                        })
-                    }} />
-                </GridItem>
-
-                <h5 style={{ paddingLeft: "30px", marginBottom: "0", width: "100%" }}>Telefones</h5>
-                {el.phones.map((phone, i) => (
-                  <GridContainer>
-                    <GridItem xs={12} sm={3} md={2} lg={2}>
-                      <CustomInput select={true} labelText="Tipo"
-                        inputProps={{
-                          value: phone.type,
-                          onChange: (e) => {
-                            // this.setState({
-                            //   data: {
-                            //     ...this.state.data,
-                            //     phones: [
-                            //       ...this.state.data.phones.slice(0, i),
-                            //       {
-                            //         ...this.state.data.phones[i],
-                            //         type: e.target.value
-                            //       },
-                            //       ...this.state.data.phones.slice(i + 1),
-                            //     ]
-                            //   }
-                            // });
-                          }
-                        }}
-                        formControlProps={{
-                          fullWidth: true
-                        }}>
-                        <option value={"MOBILE"}>Celular</option>
-                        <option value={"HOME"}>Residencial</option>
-                        <option value={"WORK"}>Trabalho</option>
-                        <option value={"OTHER"}>Outro</option>
-                      </CustomInput>
-                    </GridItem>
-
-                    <GridItem xs={12} sm={9} md={5} lg={3}>
-                      <CustomInput labelText="Número" formControlProps={{ fullWidth: true }}
-                        inputProps={{
-                          value: phone.value,
-                          onChange: (e) => {
-
-                            // this.setState({
-                            //   data: {
-                            //     ...this.state.data,
-                            //     phones: [
-                            //       ...this.state.data.phones.slice(0, i),
-                            //       {
-                            //         ...this.state.data.phones[i],
-                            //         value: e.target.value
-                            //       },
-                            //       ...this.state.data.phones.slice(i + 1),
-                            //     ]
-                            //   }
-                            // });
-                          }
-                        }} />
-                    </GridItem>
-
-                    <GridItem xs={12} sm={6} md={2} lg={2}>
-                      <CustomInput labelText="Complemento" formControlProps={{ fullWidth: true }}
-                        inputProps={{
-                          value: phone.notes,
-                          onChange: (e) => {
-                            //   this.setState({
-                            //     data: {
-                            //       ...this.state.data,
-                            //       phones: [
-                            //         ...this.state.data.phones.slice(0, i),
-                            //         {
-                            //           ...this.state.data.phones[i],
-                            //           notes: e.target.value
-                            //         },
-                            //         ...this.state.data.phones.slice(i + 1),
-                            //       ]
-                            //     }
-                            //   });
-                          }
-                        }} />
-                    </GridItem>
-
-                    <GridItem xs={12} sm={6} md={2} lg={2}>
-                      <CustomInput labelText="Apelido" formControlProps={{ fullWidth: true }}
-                        inputProps={{
-                          value: phone.alias,
-                          onChange: (e) => {
-                            // this.setState({
-                            //   data: {
-                            //     ...this.state.data,
-                            //     phones: [
-                            //       ...this.state.data.phones.slice(0, i),
-                            //       {
-                            //         ...this.state.data.phones[i],
-                            //         alias: e.target.value
-                            //       },
-                            //       ...this.state.data.phones.slice(i + 1),
-                            //     ]
-                            //   }
-                            // });
-                          }
-                        }} />
-                    </GridItem>
-
-                    <GridItem xs={12} sm={12} md={1} style={{ textAlign: "center" }}>
-
-                      <CustomInput>
-                        <Hidden only={["xs", "sm"]}>
-                          <Tooltip title="Remover telefone" arrow>
-                            <IconButton size="large"
-                              onClick={e => {
-                                // this.setState({
-                                //   data: {
-                                //     ...this.state.data,
-                                //     phones: [
-                                //       ...this.state.data.phones.slice(0, i),
-                                //       ...this.state.data.phones.slice(i + 1)
-                                //     ]
-                                //   }
-                                // });
-                              }}>
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </Hidden>
-                        <Hidden only={["md", "lg", "xl"]}>
-                          <Button color="danger"
-                            onClick={e => {
-                              // this.setState({
-                              //   data: {
-                              //     ...this.state.data,
-                              //     phones: [
-                              //       ...this.state.data.phones.slice(0, i),
-                              //       ...this.state.data.phones.slice(i + 1)
-                              //     ]
-                              //   }
-                              // });
-                            }}>
-                            <DeleteIcon /> Remover telefone
-                          </Button>
-                        </Hidden>
-                      </CustomInput>
-
-
-                    </GridItem>
-
-                  </GridContainer>
-                ))}
-
-                <GridItem xs={12} sm={12} md={1} style={{ textAlign: "center" }}>
-                  <CustomInput>
-                    <Tooltip title="Adicionar telefone" arrow>
-                      <div>
-                        <Button color="primary"
-                          onClick={e => this.setState({
+                  <GridItem xs={12} sm={12} md={6} lg={4}>
+                    <CustomInput formControlProps={{ fullWidth: true }}
+                      labelText="Nome"
+                      inputProps={{
+                        value: el.name,
+                        onChange: (e) =>
+                          this.setState({
                             touched: true,
                             counterparts: [
                               ...this.state.counterparts.slice(0, i),
                               {
                                 ...this.state.counterparts[i],
-                                phones: this.state.counterparts[i].phones.concat([{ type: "HOME", value: "", alias: "", notes: "" }])
+                                name: e.target.value
                               },
                               ...this.state.counterparts.slice(i + 1),
                             ]
-                          })}>
-                          <AddIcon />Adicionar Telefone</Button>
-                      </div>
-                    </Tooltip>
-                  </CustomInput>
-                </GridItem>
+                          })
+                      }} />
+                  </GridItem>
 
-              </GridContainer>
+                  <GridItem xs={12} sm={12} md={6} lg={4}>
+                    <CustomInput formControlProps={{ fullWidth: true }}
+                      labelText="E-mail"
+                      inputProps={{
+                        value: el.mail,
+                        onChange: (e) =>
+                          this.setState({
+                            touched: true,
+                            counterparts: [
+                              ...this.state.counterparts.slice(0, i),
+                              {
+                                ...this.state.counterparts[i],
+                                mail: e.target.value
+                              },
+                              ...this.state.counterparts.slice(i + 1),
+                            ]
+                          })
+                      }} />
+                  </GridItem>
 
-              <Tooltip title="Remover parte contrária" arrow>
-                <IconButton size="large"
-                  onClick={e =>
-                    this.setState({
-                      counterparts: [
-                        ...this.state.counterparts.slice(0, i),
-                        ...this.state.counterparts.slice(i + 1)
-                      ]
-                    })}>
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip>
+                  <GridItem xs={12} sm={12} md={6} lg={4}>
+                    <CustomInput
+                      formControlProps={{ fullWidth: true }}
+                      labelProps={{ shrink: true }}
+                      labelText="Data de Nascimento"
+                      inputProps={{
+                        type: "date",
+                        value: el.birthDate,
+                        onChange: (e) =>
+                          this.setState({
+                            touched: true,
+                            counterparts: [
+                              ...this.state.counterparts.slice(0, i),
+                              {
+                                ...this.state.counterparts[i],
+                                birthDate: e.target.value
+                              },
+                              ...this.state.counterparts.slice(i + 1),
+                            ]
+                          })
+                      }} />
+                  </GridItem>
 
-              {JSON.stringify(el)}
+                  <GridItem xs={12} sm={12} md={6} lg={4}>
+                    <CustomInput formControlProps={{ fullWidth: true }}
+                      labelText="CPF/CNPJ"
+                      inputProps={{
+                        value: el.taxPayerIdentifier,
+                        onChange: (e) =>
+                          this.setState({
+                            touched: true,
+                            counterparts: [
+                              ...this.state.counterparts.slice(0, i),
+                              {
+                                ...this.state.counterparts[i],
+                                taxPayerIdentifier: e.target.value
+                              },
+                              ...this.state.counterparts.slice(i + 1),
+                            ]
+                          })
+                      }} />
+                  </GridItem>
 
-              <Divider style={{ margin: "15px 0" }} />
-            </div>
-          );
-        })}
+                  <GridItem xs={12} sm={12} md={6} lg={4}>
+                    <CustomInput formControlProps={{ fullWidth: true }}
+                      labelText="RG"
+                      inputProps={{
+                        value: el.idCard,
+                        onChange: (e) =>
+                          this.setState({
+                            touched: true,
+                            counterparts: [
+                              ...this.state.counterparts.slice(0, i),
+                              {
+                                ...this.state.counterparts[i],
+                                idCard: e.target.value
+                              },
+                              ...this.state.counterparts.slice(i + 1),
+                            ]
+                          })
+                      }} />
+                  </GridItem>
 
+                  <GridItem xs={12} sm={12} md={6} lg={4}>
+                    <CustomInput
+                      formControlProps={{ fullWidth: true }}
+                      labelProps={{ shrink: true }}
+                      labelText="Data de Falecimento"
+                      inputProps={{
+                        type: "date",
+                        value: el.deathDate,
+                        onChange: (e) =>
+                          this.setState({
+                            touched: true,
+                            counterparts: [
+                              ...this.state.counterparts.slice(0, i),
+                              {
+                                ...this.state.counterparts[i],
+                                deathDate: e.target.value
+                              },
+                              ...this.state.counterparts.slice(i + 1),
+                            ]
+                          })
+                      }} />
+                  </GridItem>
+
+                  <h5 style={{ paddingLeft: "30px", marginBottom: "0", width: "100%" }}>Telefones</h5>
+                  {el.phones.map((phone, j) => (
+                    <div style={{ width: "100%", display: "flex", flexWrap: "wrap", boxSizing: "border-box" }}>
+                      <GridItem xs={12} sm={3} md={2} lg={2}>
+                        <CustomInput select={true} labelText="Tipo"
+                          inputProps={{
+                            value: phone.type,
+                            onChange: (e) => {
+                              this.setState({
+                                touched: true,
+                                counterparts: [
+                                  ...this.state.counterparts.slice(0, i),
+                                  {
+                                    ...this.state.counterparts[i],
+                                    phones: [
+                                      ...this.state.counterparts[i].phones.slice(0, j),
+                                      {
+                                        ...this.state.counterparts[i].phones[j],
+                                        type: e.target.value
+                                      },
+                                      ...this.state.counterparts[i].phones.slice(j + 1),
+                                    ]
+                                  },
+                                  ...this.state.counterparts.slice(i + 1),
+                                ]
+                              })
+                            }
+                          }}
+                          formControlProps={{
+                            fullWidth: true
+                          }}>
+                          <option value={"MOBILE"}>Celular</option>
+                          <option value={"HOME"}>Residencial</option>
+                          <option value={"WORK"}>Trabalho</option>
+                          <option value={"OTHER"}>Outro</option>
+                        </CustomInput>
+                      </GridItem>
+
+                      <GridItem xs={12} sm={9} md={5} lg={3}>
+                        <CustomInput labelText="Número" formControlProps={{ fullWidth: true }}
+                          inputProps={{
+                            value: phone.value,
+                            onChange: (e) => {
+                              this.setState({
+                                touched: true,
+                                counterparts: [
+                                  ...this.state.counterparts.slice(0, i),
+                                  {
+                                    ...this.state.counterparts[i],
+                                    phones: [
+                                      ...this.state.counterparts[i].phones.slice(0, j),
+                                      {
+                                        ...this.state.counterparts[i].phones[j],
+                                        value: e.target.value
+                                      },
+                                      ...this.state.counterparts[i].phones.slice(j + 1),
+                                    ]
+                                  },
+                                  ...this.state.counterparts.slice(i + 1),
+                                ]
+                              })
+                            }
+                          }} />
+                      </GridItem>
+
+                      <GridItem xs={12} sm={6} md={2} lg={2}>
+                        <CustomInput labelText="Complemento" formControlProps={{ fullWidth: true }}
+                          inputProps={{
+                            value: phone.notes,
+                            onChange: (e) => {
+                              this.setState({
+                                touched: true,
+                                counterparts: [
+                                  ...this.state.counterparts.slice(0, i),
+                                  {
+                                    ...this.state.counterparts[i],
+                                    phones: [
+                                      ...this.state.counterparts[i].phones.slice(0, j),
+                                      {
+                                        ...this.state.counterparts[i].phones[j],
+                                        notes: e.target.value
+                                      },
+                                      ...this.state.counterparts[i].phones.slice(j + 1),
+                                    ]
+                                  },
+                                  ...this.state.counterparts.slice(i + 1),
+                                ]
+                              })
+                            }
+                          }} />
+                      </GridItem>
+
+                      <GridItem xs={12} sm={6} md={2} lg={2}>
+                        <CustomInput labelText="Apelido" formControlProps={{ fullWidth: true }}
+                          inputProps={{
+                            value: phone.alias,
+                            onChange: (e) => {
+                              this.setState({
+                                touched: true,
+                                counterparts: [
+                                  ...this.state.counterparts.slice(0, i),
+                                  {
+                                    ...this.state.counterparts[i],
+                                    phones: [
+                                      ...this.state.counterparts[i].phones.slice(0, j),
+                                      {
+                                        ...this.state.counterparts[i].phones[j],
+                                        alias: e.target.value
+                                      },
+                                      ...this.state.counterparts[i].phones.slice(j + 1),
+                                    ]
+                                  },
+                                  ...this.state.counterparts.slice(i + 1),
+                                ]
+                              })
+                            }
+                          }} />
+                      </GridItem>
+
+                      <GridItem xs={12} sm={12} md={1} style={{ textAlign: "center" }}>
+
+                        <CustomInput>
+                          <Hidden only={["xs", "sm"]}>
+                            <Tooltip title="Remover telefone" arrow>
+                              <IconButton size="large"
+                                onClick={e => {
+                                  this.setState({
+                                    touched: true,
+                                    counterparts: [
+                                      ...this.state.counterparts.slice(0, i),
+                                      {
+                                        ...this.state.counterparts[i],
+                                        phones: [
+                                          ...this.state.counterparts[i].phones.slice(0, j),
+                                          ...this.state.counterparts[i].phones.slice(j + 1)
+                                        ]
+                                      },
+                                      ...this.state.counterparts.slice(i + 1),
+                                    ]
+                                  })
+                                }}>
+                                <DeleteIcon />
+                              </IconButton>
+                            </Tooltip>
+                          </Hidden>
+                          <Hidden only={["md", "lg", "xl"]}>
+                            <Button color="danger"
+                              onClick={e => {
+                                this.setState({
+                                  touched: true,
+                                  counterparts: [
+                                    ...this.state.counterparts.slice(0, i),
+                                    {
+                                      ...this.state.counterparts[i],
+                                      phones: [
+                                        ...this.state.counterparts[i].phones.slice(0, j),
+                                        ...this.state.counterparts[i].phones.slice(j + 1)
+                                      ]
+                                    },
+                                    ...this.state.counterparts.slice(i + 1),
+                                  ]
+                                });
+                              }}>
+                              <DeleteIcon /> Remover telefone
+                            </Button>
+                          </Hidden>
+                        </CustomInput>
+
+                      </GridItem>
+                    </div>
+                  ))}
+
+                  <GridItem xs={12} sm={12} md={1} style={{ textAlign: "center" }}>
+                    <CustomInput>
+                      <Tooltip title="Adicionar telefone" arrow>
+                        <div>
+                          <Button color="primary"
+                            onClick={e => this.setState({
+                              touched: true,
+                              counterparts: [
+                                ...this.state.counterparts.slice(0, i),
+                                {
+                                  ...this.state.counterparts[i],
+                                  phones: this.state.counterparts[i].phones.concat([{ type: "HOME", value: "", alias: "", notes: "" }])
+                                },
+                                ...this.state.counterparts.slice(i + 1),
+                              ]
+                            })}>
+                            <AddIcon />Adicionar Telefone</Button>
+                        </div>
+                      </Tooltip>
+                    </CustomInput>
+                  </GridItem>
+
+
+                  <GridItem xs={12} sm={12} md={12} lg={12} xl={12}>
+                    <CustomInput textarea formControlProps={{ fullWidth: true }} labelProps={{shrink: true}} labelText="Observações"
+                      inputProps={{
+                        rows: 4,
+                        value: el.notes,
+                        onChange: (e) =>
+                          this.setState({
+                            touched: true,
+                            counterparts: [
+                              ...this.state.counterparts.slice(0, i),
+                              {
+                                ...this.state.counterparts[i],
+                                notes: e.target.value
+                              },
+                              ...this.state.counterparts.slice(i + 1),
+                            ]
+                          })
+                      }} />
+                  </GridItem>
+
+                </GridContainer>
+
+                <Divider style={{ margin: "15px 0" }} />
+              </div>
+            );
+          })}
+
+        </div>
         <Button color="success" onClick={(e) => this.setState({ touched: true, counterparts: (this.state.counterparts || []).concat(this.getEmptyCounterpartData()) })}>
           Adicionar Parte contrária
         </Button>
-        {this.state.touched && <Button color="warning" onClick={(e) => this.setState({ counterparts: (this.state.counterparts || []).concat(this.getEmptyCounterpartData()) })}>
+        {this.state.touched && <Button color="warning" onClick={(e) => this.saveChanges()}>
           Salvar alterações
         </Button>}
 
